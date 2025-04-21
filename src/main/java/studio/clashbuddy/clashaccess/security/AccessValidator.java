@@ -1,65 +1,75 @@
 package studio.clashbuddy.clashaccess.security;
 
-import com.spondias.fintech.common.exections.ApiException;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.NonNull;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.http.HttpStatus;
+import org.springframework.util.StringUtils;
+import studio.clashbuddy.clashaccess.exceptions.ClashAccessDeniedException;
 
 import java.util.*;
 
 public class AccessValidator {
-    public static Principal validateOneRoleAndPermissions(HttpServletRequest request, @NonNull List<UserRole> userRole, @NonNull UserPermission ... permissions){
-        var principal = validateAndGetPrincipal(request);
-        validateRoles(userRole, principal);
-        List<UserPermission> allowedPermissions = Arrays.asList(permissions);
-        if(allowedPermissions.isEmpty()) return principal;
-        var userPermissions =principal.getPermissions();
-        if(allowedPermissions.stream().noneMatch(userPermissions::contains))
-            throw new ApiException("You don't have permission to access this service", HttpStatus.FORBIDDEN);
-        return principal;
+
+    public static AuthorizedUser validateOneRoleAndPermissions(HttpServletRequest request, String[] expectedRoles, String[] excludedRoles,String [] expectedPermissions, String[] excludedPermissions, String[] extraSecurityAttributes) {
+        var authorizedUser = validateAndGetAuthorizedUser(request,extraSecurityAttributes);
+
+        validateRolesOrPermissions(expectedRoles,authorizedUser.getRoles(),"You don't have role to access this service", 401,true);
+        validateRolesOrPermissions(expectedPermissions,authorizedUser.getPermissions(),"You don't have permission to access this service", 401,true);
+
+        validateRolesOrPermissions(excludedRoles,authorizedUser.getRoles(),"You have role which is not allowed accessed to use this service", 401,false);
+        validateRolesOrPermissions(excludedPermissions,authorizedUser.getPermissions(),"You have permission which is allowed not accessed to use this service", 401,false);
+        return authorizedUser;
     }
 
-    private static void validateRoles(List<UserRole> userRoles, Principal principal) {
-        if(userRoles.contains(UserRole.ALL_ROLES)) return;
-        if(!userRoles.contains(principal.getRole()))
-            throw new ApiException("Your role is not allowed to access this service", HttpStatus.FORBIDDEN);
+    private static void validateRolesOrPermissions(String[] expected, List<String> available,String message, int code, boolean isExpected) {
+        if(expected.length == 0) return;
+        boolean isContained = false;
+        for (String av : available)
+            if (available.stream().anyMatch(a->a.equalsIgnoreCase(av))){
+                isContained = true;
+                break;
+            }
+        if(isExpected) {
+            if (!isContained)
+                throw new ClashAccessDeniedException(message, code);
+        }else{
+            if (isContained)
+                throw new ClashAccessDeniedException(message, code);
+        }
     }
 
-    private static Principal validateAndGetPrincipal(HttpServletRequest request){
+
+    private static AuthorizedUser validateAndGetAuthorizedUser(HttpServletRequest request,String [] extraSecurityAttributes) {
         validateHeader(request);
-        var headerUserRole = UserRole.valueOf(Objects.requireNonNull(request.getHeader("x-auth-user-role")));
-        var headerUserId = Objects.requireNonNull(request.getHeader("x-auth-user-id"));
-        var clientAppType = ClientAppType.valueOf(Objects.requireNonNull(request.getHeader("x-auth-client-app-type")).toUpperCase());
-        List<UserPermission> headerUserPermissions = new LinkedList<>();
-        setUserPermissions(request, headerUserPermissions);
-        var credentialId =  Objects.requireNonNull(request.getHeader("x-auth-credential-id"));
-        var deviceId = Objects.requireNonNull(request.getHeader("x-auth-device-id"));
-        return new Principal(headerUserId,credentialId,deviceId,headerUserPermissions,headerUserRole,clientAppType);
+        var headerUserId = Objects.requireNonNull(request.getHeader("x-ca-uid"));
+        List<String> headerUserPermissions = new LinkedList<>();
+        List<String> headerUserRoles = new LinkedList<>();
+        fillFillableList(request, headerUserPermissions,"x-ca-ups");
+        fillFillableList(request, headerUserRoles,"x-ca-urs");
+        Map<String, String> extraSecurityAtt = new HashMap<>();
+        for (String extraSecurityAttribute : extraSecurityAttributes) {
+            String value = request.getHeader(extraSecurityAttribute);
+            if (!StringUtils.hasText(value))
+                extraSecurityAtt.put(extraSecurityAttribute, value);
+        }
+        return new AuthorizedUser(headerUserId, headerUserRoles,headerUserPermissions,extraSecurityAtt);
+
     }
 
-    private static void setUserPermissions(HttpServletRequest request, List<UserPermission> headerUserPermissions) {
-        if(StringUtils.isEmpty(request.getHeader("x-auth-user-permissions"))) return;
-        request.getHeaders("x-auth-user-permissions").asIterator().forEachRemaining(permission-> {
+    private static void fillFillableList(HttpServletRequest request, List<String> fillable,String headerKey) {
+        if(!StringUtils.hasText(request.getHeader(headerKey))) return;
+        request.getHeaders(headerKey).asIterator().forEachRemaining(data-> {
             try {
-               var userPermission= UserPermission.valueOf(permission);
-                headerUserPermissions.add(userPermission);
+                fillable.add(data);
             }catch (RuntimeException ignored){
             }
         });
     }
 
-
     private static void validateHeader(HttpServletRequest request) {
-         if(StringUtils.isEmpty(request.getHeader("x-auth-user-id")))
-             throw new ApiException("Missing middle layer user id header", HttpStatus.FORBIDDEN);
-        if(StringUtils.isEmpty(request.getHeader("x-auth-user-role")))
-            throw new ApiException("Missing middle layer user role header", HttpStatus.FORBIDDEN);
-        if(StringUtils.isEmpty(request.getHeader("x-auth-credential-id")))
-            throw new ApiException("Missing middle layer credential id header", HttpStatus.FORBIDDEN);
-        if(StringUtils.isEmpty(request.getHeader("x-auth-device-id")))
-            throw new ApiException("Missing middle layer device id header", HttpStatus.FORBIDDEN);
-        if(StringUtils.isEmpty(request.getHeader( "x-auth-client-app-type")))
-            throw new ApiException("Missing client app type header", HttpStatus.FORBIDDEN);
+        if(!StringUtils.hasText(request.getHeader("x-ca-uid")))
+            throw new ClashAccessDeniedException("Missing middle layer user id header", 403);
+        if(!StringUtils.hasText(request.getHeader("x-ca-ups")))
+            throw new ClashAccessDeniedException("Missing middle layer user permission header",403);
+        if(!StringUtils.hasText(request.getHeader("x-ca-urs")))
+            throw new ClashAccessDeniedException("Missing middle layer user roles header", 403);
     }
 }
