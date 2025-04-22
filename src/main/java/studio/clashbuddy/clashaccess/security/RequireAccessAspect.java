@@ -41,7 +41,6 @@ public class RequireAccessAspect {
         authorizedUser.setUserId(p.getUserId());
         authorizedUser.setPermissions(p.getPermissions());
         authorizedUser.setRoles(p.getRoles());
-        authorizedUser.setExtraSecurityAttributes(p.getExtraSecurityAttributes());
     }
 
 }
