@@ -11,8 +11,9 @@ import java.lang.reflect.Method;
 
 @Aspect
 @Component
-public class RequireAccessAspect {
+class RequireAccessAspect {
     private final HttpServletRequest request;
+
     public RequireAccessAspect(HttpServletRequest request) {
         this.request = request;
     }
@@ -23,8 +24,8 @@ public class RequireAccessAspect {
         Method method = ms.getMethod();
         Object[] args = joinPoint.getArgs();
         RequireAccess access = method.getAnnotation(RequireAccess.class);
-        if(access == null) return;
-        String[] expectedRoles =access.roles();
+        if (access == null) return;
+        String[] expectedRoles = access.roles();
         String[] expectedPermission = access.permissions();
         String[] unExpectedRoles = access.excludedRoles();
         String[] unExpectedPermission = access.excludedPermissions();
@@ -36,7 +37,7 @@ public class RequireAccessAspect {
                 break;
             }
 
-        var p = AccessValidator.validateOneRoleAndPermissions(request,expectedRoles,unExpectedRoles,expectedPermission,unExpectedPermission,extraAtt);
+        var p = AccessValidator.validateOneRoleAndPermissions(request, expectedRoles, unExpectedRoles, expectedPermission, unExpectedPermission, extraAtt);
         if (authorizedUser == null) return;
         authorizedUser.setUserId(p.getUserId());
         authorizedUser.setPermissions(p.getPermissions());

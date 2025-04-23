@@ -6,10 +6,9 @@ import studio.clashbuddy.clashaccess.security.RequireAccess;
 
 import java.util.Map;
 
-@RequestMapping("/api")
+@RequestMapping("/apis")
 @RestController
-public class TestController {
-
+public class STestController {
 
 
     @RequireAccess(roles = "admin", excludedRoles = "employee", permissions = "Cookie")

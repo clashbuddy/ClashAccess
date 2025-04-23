@@ -1,15 +1,12 @@
 package studio.clashbuddy.clashaccess.security;
 
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 public class AuthorizedUser {
 
-    private  String userId;
-    private  Set<String> roles;
+    private String userId;
+    private Set<String> roles;
     private Set<String> permissions;
-
 
 
     public AuthorizedUser(String userId, Set<String> roles, Set<String> permissions) {

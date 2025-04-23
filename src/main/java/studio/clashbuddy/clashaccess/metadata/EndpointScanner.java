@@ -1,36 +1,69 @@
 package studio.clashbuddy.clashaccess.metadata;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.aop.support.AopUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.*;
-import studio.clashbuddy.clashaccess.properies.ClashBuddySecurityProperties;
+import studio.clashbuddy.clashaccess.properties.ClashBuddyClashAccessProperties;
+import studio.clashbuddy.clashaccess.properties.ClashBuddySecurityClashAccessAppProperties;
+import studio.clashbuddy.clashaccess.properties.ServiceType;
 import studio.clashbuddy.clashaccess.security.RequireAccess;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
 
+@Order(Ordered.HIGHEST_PRECEDENCE)
 @Component
-public class EndpointScanner implements ApplicationListener<ApplicationReadyEvent> {
+class EndpointScanner implements ApplicationListener<ApplicationReadyEvent> {
 
-    private final AvailableEndPoints endPoints;
-    private final ClashBuddySecurityProperties securityProperties;
+    private final ScannedMetadataEndpoints endPoints;
+    private final ClashBuddySecurityClashAccessAppProperties securityProperties;
+    @Value("${server.servlet.context-path:/}")
+    private String prefixPath;
+    private final ClashBuddyClashAccessProperties clashBuddyClashAccessProperties;
+    private final Logger logger = LoggerFactory.getLogger(EndpointScanner.class);
 
-    public EndpointScanner(AvailableEndPoints endPoints, ClashBuddySecurityProperties securityProperties) {
+
+    public EndpointScanner(ScannedMetadataEndpoints endPoints, ClashBuddySecurityClashAccessAppProperties clashBuddySecurityClashAccessAppProperties, ClashBuddyClashAccessProperties clashBuddyClashAccessProperties) {
         this.endPoints = endPoints;
-        this.securityProperties = securityProperties;
+        this.securityProperties = clashBuddySecurityClashAccessAppProperties;
+        this.clashBuddyClashAccessProperties = clashBuddyClashAccessProperties;
     }
 
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
+        if(!clashBuddyClashAccessProperties.getServiceType().equals(ServiceType.APPLICATION)) return;
+        String scanStatus = securityProperties.isScan()
+                ? "📦 Ready to process metadata endpoints."
+                : "⚠️  Endpoint scanning is disabled. No endpoints will be processed.";
+
+        logger.info(
+                "\n" +
+                        "✅ ClashAccess Initialization Summary:\n" +
+                        "   🔧 Mode:              APPLICATION\n" +
+                        "   🔗 Endpoint :         {}\n" +
+                        "   🔍 Endpoint Scan:     {}\n" +
+                        "   ✅ Module Enabled:     {}\n" +
+                        "   {}\n",
+                securityProperties.getEndpointMetadata(),
+                securityProperties.isScan(),
+                securityProperties.isEnabled(),
+                scanStatus
+        );
+
         if (!securityProperties.isScan()) return;
         ApplicationContext context = event.getApplicationContext();
         Map<String, Object> controllers = context.getBeansWithAnnotation(RestController.class);
-        Set<SecuredEndpointMetadata> securedEndpoints = new HashSet<>();
+        Set<ClashScannedEndpointMetadata> securedEndpoints = new HashSet<>();
         for (Object bean : controllers.values()) {
             Class<?> clazz = AopUtils.getTargetClass(bean);
             String basePath = Optional.ofNullable(clazz.getAnnotation(RequestMapping.class))
@@ -43,28 +76,28 @@ public class EndpointScanner implements ApplicationListener<ApplicationReadyEven
                 RequireAccess access = method.getAnnotation(RequireAccess.class);
                 boolean isPublic = access == null;
 
-                String methodPath = "";
+                String[] methodPath = new String[0];
                 RequestMethod httpMethod = RequestMethod.GET;
 
                 if (method.isAnnotationPresent(GetMapping.class)) {
-                    methodPath = method.getAnnotation(GetMapping.class).value()[0];
+                    methodPath = method.getAnnotation(GetMapping.class).value();
                     httpMethod = RequestMethod.GET;
                 } else if (method.isAnnotationPresent(PostMapping.class)) {
-                    methodPath = method.getAnnotation(PostMapping.class).value()[0];
+                    methodPath = method.getAnnotation(PostMapping.class).value();
                     httpMethod = RequestMethod.POST;
                 } else if (method.isAnnotationPresent(DeleteMapping.class)) {
-                    methodPath = method.getAnnotation(DeleteMapping.class).value()[0];
+                    methodPath = method.getAnnotation(DeleteMapping.class).value();
                     httpMethod = RequestMethod.DELETE;
                 }
                 else if (method.isAnnotationPresent(PutMapping.class)) {
-                    methodPath = method.getAnnotation(PutMapping.class).value()[0];
+                    methodPath = method.getAnnotation(PutMapping.class).value();
                     httpMethod = RequestMethod.PUT;
                 }
                 else if (method.isAnnotationPresent(PatchMapping.class)) {
-                    methodPath = method.getAnnotation(PatchMapping.class).value()[0];
+                    methodPath = method.getAnnotation(PatchMapping.class).value();
                     httpMethod = RequestMethod.PATCH;
                 } else if (method.isAnnotationPresent(RequestMapping.class)) {
-                    methodPath = method.getAnnotation(RequestMapping.class).value()[0];
+                    methodPath = method.getAnnotation(RequestMapping.class).value();
                     httpMethod = method.getAnnotation(RequestMapping.class).method()[0];
                 }
 
@@ -85,13 +118,15 @@ public class EndpointScanner implements ApplicationListener<ApplicationReadyEven
                     }
                 }
 
-                SecuredEndpointMetadata meta = new SecuredEndpointMetadata();
-                meta.setFullPath(basePath + methodPath);
+                ClashScannedEndpointMetadata meta = new ClashScannedEndpointMetadata();
+                meta.setEndpoints(methodPath);
+                meta.setBasePath(basePath);
                 meta.setHttpMethod(httpMethod.name());
                 meta.setPublic(isPublic);
                 meta.setController(clazz.getSimpleName());
                 meta.setFullControllerName(clazz.getName());
                 meta.setMethod(method.getName());
+                meta.setContextPath(prefixPath);
 
                 if (!isPublic) {
                     meta.setRoles(Set.of(access.roles()));

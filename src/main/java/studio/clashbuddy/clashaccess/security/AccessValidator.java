@@ -6,7 +6,7 @@ import studio.clashbuddy.clashaccess.exceptions.ClashAccessDeniedException;
 
 import java.util.*;
 
-public class AccessValidator {
+class AccessValidator {
 
     public static AuthorizedUser validateOneRoleAndPermissions(HttpServletRequest request, String[] expectedRoles, String[] excludedRoles, String[] expectedPermissions, String[] excludedPermissions, String[] extraSecurityAttributes) {
         var authorizedUser = validateAndGetAuthorizedUser(request, extraSecurityAttributes);
