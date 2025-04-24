@@ -10,29 +10,56 @@
     </parent>
     <groupId>studio.clashbuddy</groupId>
     <artifactId>spring-boot-starter-clashaccess</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0</version>
     <name>ClashAccess</name>
     <description>ClashAccess</description>
-    <url/>
+    <url>https://github.com/clashbuddy/ClashAccess</url>
     <licenses>
-        <license/>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+            <distribution>repo</distribution>
+        </license>
     </licenses>
     <developers>
-        <developer/>
+        <developer>
+            <id>clashbuddy</id>
+            <name>ClashBuddy Studio</name>
+            <email>dev@clashbuddy.studio</email>
+            <organization>ClashBuddy</organization>
+            <organizationUrl>https://dev.clashbuddy.studio</organizationUrl>
+        </developer>
     </developers>
     <scm>
-        <connection/>
-        <developerConnection/>
-        <tag/>
-        <url/>
+        <connection>scm:git:git://github.com/clashbuddy/ClashAccess.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com:clashbuddy/ClashAccess.git</developerConnection>
+        <url>https://github.com/clashbuddy/ClashAccess</url>
+        <tag>v1.0.0</tag>
     </scm>
     <properties>
         <java.version>23</java.version>
+        <spring.version>6.2.6</spring.version>
+        <jakarta.version>6.1.0</jakarta.version>
     </properties>
+
     <dependencies>
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <version>${jakarta.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+            <version>${spring.version}</version> <!-- Match your Spring version -->
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-webmvc</artifactId>
+            <version>${spring.version}</version> <!-- Match your Spring version -->
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -40,24 +67,10 @@
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-configuration-processor</artifactId>
             <optional>true</optional>
         </dependency>
     </dependencies>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-            </plugin>
-        </plugins>
-    </build>
 
 </project>
