@@ -8,8 +8,8 @@ import java.util.*;
 
 class AccessValidator {
 
-    public static AuthorizedUser validateOneRoleAndPermissions(HttpServletRequest request, String[] expectedRoles, String[] excludedRoles, String[] expectedPermissions, String[] excludedPermissions, String[] extraSecurityAttributes) {
-        var authorizedUser = validateAndGetAuthorizedUser(request, extraSecurityAttributes);
+    public static AuthorizedUser validateOneRoleAndPermissions(HttpServletRequest request, String[] expectedRoles, String[] excludedRoles, String[] expectedPermissions, String[] excludedPermissions) {
+        var authorizedUser = validateAndGetAuthorizedUser(request);
         var userRoles = authorizedUser.getRoles();
         var userPermissions = authorizedUser.getPermissions();
         validateRolesOrPermissions(expectedRoles, userRoles, "role", true);
@@ -30,7 +30,7 @@ class AccessValidator {
             throw new ClashAccessDeniedException("Access Denied: " + message + " is explicitly excluded", 403);
     }
 
-    private static AuthorizedUser validateAndGetAuthorizedUser(HttpServletRequest request, String[] extraSecurityAttributes) {
+    private static AuthorizedUser validateAndGetAuthorizedUser(HttpServletRequest request) {
         validateHeader(request);
         var headerUserId = Objects.requireNonNull(request.getHeader("x-ca-uid"));
         Set<String> headerUserPermissions = new HashSet<>();

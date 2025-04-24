@@ -29,7 +29,6 @@ class RequireAccessAspect {
         String[] expectedPermission = access.permissions();
         String[] unExpectedRoles = access.excludedRoles();
         String[] unExpectedPermission = access.excludedPermissions();
-        String[] extraAtt = access.extraSecurityAttributes();
         AuthorizedUser authorizedUser = null;
         for (Object arg : args)
             if (arg instanceof AuthorizedUser authorizedUser1) {
@@ -37,7 +36,7 @@ class RequireAccessAspect {
                 break;
             }
 
-        var p = AccessValidator.validateOneRoleAndPermissions(request, expectedRoles, unExpectedRoles, expectedPermission, unExpectedPermission, extraAtt);
+        var p = AccessValidator.validateOneRoleAndPermissions(request, expectedRoles, unExpectedRoles, expectedPermission, unExpectedPermission);
         if (authorizedUser == null) return;
         authorizedUser.setUserId(p.getUserId());
         authorizedUser.setPermissions(p.getPermissions());

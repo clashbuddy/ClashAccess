@@ -15,6 +15,4 @@ public @interface RequireAccess {
     String[] permissions() default {};
 
     String[] excludedPermissions() default {};
-
-    String[] extraSecurityAttributes() default {};
 }

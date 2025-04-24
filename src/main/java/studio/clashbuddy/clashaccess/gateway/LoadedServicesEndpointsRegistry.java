@@ -37,18 +37,19 @@ public class LoadedServicesEndpointsRegistry {
     }
 
     public boolean isPublicEndpoint(String endpoint) {
-        if (clashBuddyClashAccessProperties.getServiceType().equals(ServiceType.APPLICATION))
-            throw new IllegalStateException(
-                    "❌ Invalid usage: this method is only intended for API Gateway services.\n" +
-                            "🔧 To fix this, set the correct service type in your configuration:\n\n" +
-                            "   clashbuddy.clashaccess.application.scan=true\n\n" +
-                            "🚫 Current context: 'application'\n" +
-                            "✅ Allowed context: 'gateway'"
-            );
-        ClashScannedEndpointMetadata metadata = endpointMetadataHashMap.get(endpoint);
-        if (metadata == null)
-            return true;
-        return metadata.isPublic();
+//        if (clashBuddyClashAccessProperties.getServiceType().equals(ServiceType.APPLICATION))
+//            throw new IllegalStateException(
+//                    "❌ Invalid usage: this method is only intended for API Gateway services.\n" +
+//                            "🔧 To fix this, set the correct service type in your configuration:\n\n" +
+//                            "   clashbuddy.clashaccess.application.scan=true\n\n" +
+//                            "🚫 Current context: 'application'\n" +
+//                            "✅ Allowed context: 'gateway'"
+//            );
+//        ClashScannedEndpointMetadata metadata = endpointMetadataHashMap.get(endpoint);
+//        if (metadata == null)
+//            return true;
+//        return metadata.isPublic();
+        return false;
     }
 
     private void loadEndpointMetadata() {

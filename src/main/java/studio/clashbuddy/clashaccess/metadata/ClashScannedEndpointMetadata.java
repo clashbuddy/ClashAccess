@@ -1,21 +1,21 @@
 package studio.clashbuddy.clashaccess.metadata;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Set;
+import org.springframework.web.bind.annotation.RequestMethod;
+
+import java.util.*;
 
 public class ClashScannedEndpointMetadata {
-    private String httpMethod;
+    private String[] httpMethods;
     private String[] endpoints;
     private String basePath;
     private String contextPath;
-    private boolean isPublic;
     private String controller;
     private String fullControllerName;
     private String method;
     private Set<String> roles;
     private Set<String> permissions;
-
+    private String[] publicHttpMethods;
+    private String[] publicEndpoints;
     public void setBasePath(String basePath) {
         this.basePath = basePath;
     }
@@ -24,12 +24,12 @@ public class ClashScannedEndpointMetadata {
         return basePath;
     }
 
-    public String getHttpMethod() {
-        return httpMethod;
+    public String[] getHttpMethods() {
+        return httpMethods;
     }
 
-    public void setHttpMethod(String httpMethod) {
-        this.httpMethod = httpMethod;
+    public void setHttpMethods(RequestMethod[] httpMethods) {
+      this.httpMethods = Arrays.stream(httpMethods).map(RequestMethod::name).toArray(String[]::new);
     }
 
     public String getMainEndpoint() {
@@ -73,13 +73,50 @@ public class ClashScannedEndpointMetadata {
         this.endpoints = endpoints;
     }
 
-    public boolean isPublic() {
-        return isPublic;
+    void setIsPublic(boolean isPublic) {
+        if(isPublic){
+            publicHttpMethods = httpMethods;
+            publicEndpoints = endpoints;
+        }
+        else {
+            publicHttpMethods = new String[0];
+            publicEndpoints = new String[0];
+        }
     }
 
-    public void setPublic(boolean aPublic) {
-        isPublic = aPublic;
+    void changePublicEndpoints(String[] privateEndpoints) {
+        publicEndpoints = removePrivates(publicEndpoints, privateEndpoints);
     }
+
+    void changePublicMethods(String[] privateMethods) {
+        publicHttpMethods = removePrivates(publicHttpMethods, privateMethods);
+    }
+
+    public String[] getPublicHttpMethods() {
+        return publicHttpMethods;
+    }
+
+    public String[] getPublicEndpoints() {
+        return publicEndpoints;
+    }
+
+    private String[] removePrivates(String[] publics, String[] privates) {
+        if (privates == null || privates.length == 0) {
+            return publics;
+        }
+
+        Set<String> privateSet = new HashSet<>(Arrays.asList(privates));
+        List<String> filtered = new ArrayList<>();
+
+        for (String item : publics) {
+            if (!privateSet.contains(item)) {
+                filtered.add(item);
+            }
+        }
+
+        return filtered.toArray(new String[0]);
+    }
+
 
     public String getController() {
         return controller;
@@ -124,11 +161,12 @@ public class ClashScannedEndpointMetadata {
     @Override
     public String toString() {
         return "SecuredEndpointMetadata{" +
-                "httpMethod='" + httpMethod + '\'' +
+                "httpMethod='" + Arrays.toString(httpMethods) + '\'' +
                 ", endpoints=" + Arrays.toString(endpoints) +
                 ", basePath='" + basePath + '\'' +
                 ", contextPath='" + contextPath + '\'' +
-                ", isPublic=" + isPublic +
+                ", publicHttpMethods=" + Arrays.toString(publicHttpMethods) +'\''+
+                ", publicEndpoints=" + Arrays.toString(publicEndpoints) +'\''+
                 ", controller='" + controller + '\'' +
                 ", fullControllerName='" + fullControllerName + '\'' +
                 ", method='" + method + '\'' +
