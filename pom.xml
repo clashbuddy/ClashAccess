@@ -12,37 +12,49 @@
     <artifactId>spring-boot-starter-clashaccess</artifactId>
     <version>1.0.0</version>
     <name>ClashAccess</name>
-    <description>ClashAccess</description>
+    <description>ClashAccess is a plug-and-play Spring Boot starter built by ClashBuddy Studio to simplify security and
+        metadata exposure in microservice environments. It provides annotation-based role and permission access control
+        (@RequireAccess), dynamic endpoint metadata for API gateways, and seamless injection of authorized user context
+        — all without requiring any controller changes. Designed for real-money games and modular services, ClashAccess
+        offers a clean and maintainable way to manage access logic across distributed applications.
+    </description>
     <url>https://github.com/clashbuddy/ClashAccess</url>
+
+
     <licenses>
         <license>
-            <name>Apache License, Version 2.0</name>
-            <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+            <name>Apache-2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
             <distribution>repo</distribution>
         </license>
     </licenses>
+
+
     <developers>
         <developer>
-            <id>clashbuddy</id>
             <name>ClashBuddy Studio</name>
             <email>dev@clashbuddy.studio</email>
             <organization>ClashBuddy</organization>
             <organizationUrl>https://dev.clashbuddy.studio</organizationUrl>
         </developer>
     </developers>
+
     <scm>
         <connection>scm:git:git://github.com/clashbuddy/ClashAccess.git</connection>
         <developerConnection>scm:git:ssh://git@github.com:clashbuddy/ClashAccess.git</developerConnection>
         <url>https://github.com/clashbuddy/ClashAccess</url>
         <tag>v1.0.0</tag>
     </scm>
+
     <properties>
         <spring.version>6.2.6</spring.version>
         <jakarta.version>6.1.0</jakarta.version>
         <java.version>17</java.version>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+
 
     <dependencies>
         <dependency>
@@ -74,5 +86,63 @@
         </dependency>
     </dependencies>
 
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.sonatype.central</groupId>
+                <artifactId>central-publishing-maven-plugin</artifactId>
+                <version>0.6.0</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <publishingServerId>central</publishingServerId>
+                </configuration>
+            </plugin>
+
+            <!--            javadoc-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.3.0</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!--            source-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>3.2.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!--            pom, .asc-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>1.6</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

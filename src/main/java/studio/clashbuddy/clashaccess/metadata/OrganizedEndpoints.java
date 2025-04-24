@@ -10,7 +10,7 @@ public class OrganizedEndpoints {
 
 
     public OrganizedEndpoints(String fullControllerName, List<ClashScannedEndpointMetadata> metadata) {
-        var m = metadata.getFirst();
+        var m = metadata.get(0);
         if (m == null)
             controllerName = "";
         else
