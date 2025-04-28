@@ -1,40 +1,31 @@
 package studio.clashbuddy.clashaccess.security.config;
 
-import jakarta.annotation.Nonnull;
-import org.springframework.web.bind.annotation.RequestMethod;
-
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-/**
- * Holds all security rules for a service.
- */
+
 public class AccessRules {
 
-    private final Set<AccessRule> rules = new HashSet<>();
-    private final Set<AccessRule> publicRules = new HashSet<>();
+    private final Set<ProtectedRule> protectedRules = new HashSet<>();
+    private final Set<PublicRule> publicRules = new HashSet<>();
     private boolean authorizeAnyRequest = false;
-    public AccessRules() {
+
+    private AccessRules() {
     }
 
-
-    public AccessRules(@Nonnull AccessRule... rules) {
-        Collections.addAll(this.rules, rules);
-    }
-
-    public AccessRules(@Nonnull Set<AccessRule> rules) {
-        this.rules.addAll(rules);
-    }
-
-
-    public AccessRuleBuilder protect() {
-        return new AccessRuleBuilder(this);
-    }
-
-
-    public PublicRuleBuilder unprotect() {
-        return new PublicRuleBuilder(this);
+    public static AccessRules rules(Rule... rules) {
+        AccessRules accessRules = new AccessRules();
+        for (Rule rule : rules) {
+            if (rule instanceof ProtectedRule) {
+                accessRules.protectedRules.add((ProtectedRule) rule);
+            } else if (rule instanceof PublicRule) {
+                accessRules.publicRules.add((PublicRule) rule);
+            } else {
+                throw new IllegalArgumentException("Unknown rule type: " + rule.getClass());
+            }
+        }
+        return accessRules;
     }
 
     public AccessRules authorizeAny() {
@@ -42,27 +33,15 @@ public class AccessRules {
         return this;
     }
 
-    protected void addRule(AccessRule rule) {
-        this.rules.add(rule);
-    }
-    protected void addPublicRule(AccessRule rule) {
-        this.publicRules.add(rule);
+    public Set<ProtectedRule> getProtectedRules() {
+        return Collections.unmodifiableSet(protectedRules);
     }
 
-    @Nonnull
-    public Set<AccessRule> getRules() {
-        return Collections.unmodifiableSet(rules);
-    }
-
-    public Set<AccessRule> getPublicRules() {
-        return publicRules;
+    public Set<PublicRule> getPublicRules() {
+        return Collections.unmodifiableSet(publicRules);
     }
 
     public boolean isAuthorizeAnyRequest() {
         return authorizeAnyRequest;
     }
-
-
-
-
 }

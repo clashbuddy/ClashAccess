@@ -2,8 +2,8 @@ package studio.clashbuddy.clashaccess.metadata;
 
 import org.springframework.stereotype.Component;
 import studio.clashbuddy.clashaccess.properties.ClashBuddySecurityClashAccessAppProperties;
-import studio.clashbuddy.clashaccess.security.config.AccessRule;
 import studio.clashbuddy.clashaccess.security.config.AccessRules;
+import studio.clashbuddy.clashaccess.security.config.ProtectedRule;
 
 import java.util.HashSet;
 import java.util.List;
@@ -49,12 +49,12 @@ class ScannedMetadataEndpoints {
     }
 
     void changeEndPointsToPrivate(AccessRules accessRules) {
-        if (accessRules == null || accessRules.getRules().isEmpty() || endpoints == null) {
+        if (accessRules == null || accessRules.getProtectedRules().isEmpty() || endpoints == null) {
             return;
         }
 
         // Precompute: Build a map from path -> rules fast access (optional)
-        Set<AccessRule> accessRuleSet = accessRules.getRules();
+        Set<ProtectedRule> accessRuleSet = accessRules.getProtectedRules();
 
         for (var endpoint : endpoints) {
             Set<String> endpointPaths = Set.of(endpoint.getEndpoints());
@@ -67,7 +67,7 @@ class ScannedMetadataEndpoints {
 
                 if (matches) {
                     endpoint.changePublicEndpoints(rulePaths.toArray(new String[0]));
-                    endpoint.changePublicMethods(rule.getMethodsStrings());
+                    endpoint.changePublicMethods(rule.getMethods());
                 }
             }
         }

@@ -11,6 +11,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.bind.annotation.*;
 import studio.clashbuddy.clashaccess.properties.ClashBuddyClashAccessProperties;
 import studio.clashbuddy.clashaccess.properties.ClashBuddySecurityClashAccessAppProperties;
@@ -18,8 +19,10 @@ import studio.clashbuddy.clashaccess.properties.ServiceType;
 import studio.clashbuddy.clashaccess.security.AccessMetadataService;
 import studio.clashbuddy.clashaccess.security.AccessRulesCompiler;
 import studio.clashbuddy.clashaccess.security.RequireAccess;
-import studio.clashbuddy.clashaccess.security.config.AccessRule;
 import studio.clashbuddy.clashaccess.security.config.AccessRules;
+import studio.clashbuddy.clashaccess.security.config.ProtectedRule;
+import studio.clashbuddy.clashaccess.security.config.PublicRule;
+import studio.clashbuddy.clashaccess.security.config.Rule;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -66,12 +69,12 @@ class EndpointScanner implements ApplicationListener<ApplicationReadyEvent> {
 
         logger.info(
                 "\n" +
-                        "✅ ClashAccess Initialization Summary:\n" +
+                        "✅ ClashAccess {} Initialization Summary:\n" +
                         "   🔧 Mode:              APPLICATION\n" +
                         "   🔗 Endpoint :         {}\n" +
                         "   🔍 Endpoint Scan:     {}\n" +
                         "   ✅ Module Enabled:     {}\n" +
-                        "   {}\n",
+                        "   {}\n",VersionReader.getVersion(),
                 securityProperties.getEndpointMetadata(),
                 securityProperties.isScan(),
                 securityProperties.isEnabled(),
@@ -97,23 +100,29 @@ class EndpointScanner implements ApplicationListener<ApplicationReadyEvent> {
                 RequestMethod[] httpMethod = null;
 
                 if (method.isAnnotationPresent(GetMapping.class)) {
-                    methodPath = method.getAnnotation(GetMapping.class).value();
+                    var methodData = method.getAnnotation(GetMapping.class);
+                    methodPath = getPaths(methodData.value(),methodData.path());
                     httpMethod = new RequestMethod[]{RequestMethod.GET};
                 } else if (method.isAnnotationPresent(PostMapping.class)) {
-                    methodPath = method.getAnnotation(PostMapping.class).value();
+                    var methodData = method.getAnnotation(PostMapping.class);
+                    methodPath = getPaths(methodData.value(),methodData.path());
                     httpMethod = new RequestMethod[]{RequestMethod.POST};
                 } else if (method.isAnnotationPresent(DeleteMapping.class)) {
-                    methodPath = method.getAnnotation(DeleteMapping.class).value();
-                    httpMethod = new RequestMethod[]{RequestMethod.DELETE};
+                    var methodData = method.getAnnotation(DeleteMapping.class);
+                    methodPath = getPaths(methodData.value(),methodData.path());
+                    httpMethod = new RequestMethod[]{RequestMethod.POST};
                 } else if (method.isAnnotationPresent(PutMapping.class)) {
-                    methodPath = method.getAnnotation(PutMapping.class).value();
+                    var methodData = method.getAnnotation(PutMapping.class);
+                    methodPath = getPaths(methodData.value(),methodData.path());
                     httpMethod = new RequestMethod[]{RequestMethod.PUT};
                 } else if (method.isAnnotationPresent(PatchMapping.class)) {
-                    methodPath = method.getAnnotation(PatchMapping.class).value();
+                    var methodData = method.getAnnotation(PatchMapping.class);
+                    methodPath = getPaths(methodData.value(),methodData.path());
                     httpMethod = new RequestMethod[]{RequestMethod.PATCH};
                 } else if (method.isAnnotationPresent(RequestMapping.class)) {
-                    methodPath = method.getAnnotation(RequestMapping.class).value();
-                    httpMethod = method.getAnnotation(RequestMapping.class).method();
+                    var methodData = method.getAnnotation(RequestMapping.class);
+                    methodPath = getPaths(methodData.value(),methodData.path());
+                    httpMethod = methodData.method().length==0? RequestMethod.values():methodData.method();
                 }
 
 
@@ -137,7 +146,7 @@ class EndpointScanner implements ApplicationListener<ApplicationReadyEvent> {
                 meta.setEndpoints(methodPath);
                 meta.setBasePath(basePath);
                 meta.setHttpMethods(httpMethod);
-                meta.setIsPublic(isPublic);
+                meta.setIsPrivate(!isPublic, true);
                 meta.setController(clazz.getSimpleName());
                 meta.setFullControllerName(clazz.getName());
                 meta.setMethod(method.getName());
@@ -151,14 +160,85 @@ class EndpointScanner implements ApplicationListener<ApplicationReadyEvent> {
                 securedEndpoints.add(meta);
             }
         }
-        validateNoConflicts(accessRules.getRules(),accessRules.getPublicRules());
+        if (accessRules != null)
+            validateNoConflicts(accessRules.getProtectedRules(), accessRules.getPublicRules());
+
         if (!securityProperties.isScan()) return;
+        if (accessRules != null)
+            if (accessRules.isAuthorizeAnyRequest())
+                authorizeEny(securedEndpoints);
+
         endPoints.setEndpoints(securedEndpoints);
         endPoints.changeEndPointsToPrivate(accessRules);
+        if (accessRules != null)
+            unAuthorizedEnyPublic(accessRules.getPublicRules(), securedEndpoints);
     }
 
+    private String[] getPaths(String[] values, String[] paths){
+        if(values == null || values.length ==0){
+            if(paths == null  || paths.length==0)
+                return new String[]{"/"};
+            return paths;
+        }
+        return values;
+    }
 
-    private void validateNoConflicts(Set<AccessRule> rules, Set<AccessRule> publicRules) {
+    private void unAuthorizedEnyPublic(Set<PublicRule> publicRules, Set<ClashScannedEndpointMetadata> scannedMetadataEndpoints) {
+        if (publicRules.isEmpty()) return;
+        AntPathMatcher antPathMatcher = new AntPathMatcher();
+        for (ClashScannedEndpointMetadata metadata : scannedMetadataEndpoints) {
+            if (metadata.isPrivate) continue;
+            for (PublicRule rule : publicRules) {
+                String[] publicEndPoints = findMatchedPaths(antPathMatcher, metadata.getPublicEndpoints(), rule.getPaths().toArray(String[]::new));
+                String[] publicMethods = findMatchedMethods(metadata.getHttpMethods(), rule.getMethods());
+                metadata.changePrivateEndpointsAndMethods(publicEndPoints, publicMethods);
+            }
+        }
+    }
+
+    private void authorizeEny(Set<ClashScannedEndpointMetadata> scannedMetadataEndpoints) {
+        for (ClashScannedEndpointMetadata clashScannedEndpointMetadata : scannedMetadataEndpoints)
+            if (!clashScannedEndpointMetadata.isPrivate)
+                clashScannedEndpointMetadata.setIsPrivate(true, false);
+    }
+
+    public static String[] findMatchedPaths(AntPathMatcher matcher, String[] pathsA, String[] pathsB) {
+        List<String> matched = new ArrayList<>();
+
+        if (pathsA == null || pathsB == null) {
+            return new String[0];
+        }
+
+        for (String a : pathsA) {
+            for (String b : pathsB) {
+                if (matcher.match(a, b) || matcher.match(b, a)) {
+                    matched.add(b); // or matched.add(a) depending on what you want
+                    break; // break inner loop to avoid duplicates
+                }
+            }
+        }
+
+        return matched.toArray(new String[0]);
+    }
+
+    public static String[] findMatchedMethods(String[] methodsA, String[] methodsB) {
+        List<String> matched = new ArrayList<>();
+
+        if (methodsA == null || methodsB == null) {
+            return new String[0];
+        }
+        for (String a : methodsA) {
+            for (String b : methodsB) {
+                if (a.equalsIgnoreCase(b)) {
+                    matched.add(b); // or matched.add(a) depending on what you want
+                    break; // break inner loop to avoid duplicates
+                }
+            }
+        }
+        return matched.toArray(new String[0]);
+    }
+
+    private void validateNoConflicts(Set<ProtectedRule> rules, Set<PublicRule> publicRules) {
         Set<String> protectedPairs = buildPairs(rules);
         Set<String> publicPairs = buildPairs(publicRules);
 
@@ -175,15 +255,15 @@ class EndpointScanner implements ApplicationListener<ApplicationReadyEvent> {
         }
     }
 
-    private Set<String> buildPairs(Set<AccessRule> rules) {
+    private Set<String> buildPairs(Set<? extends Rule> rules) {
         Set<String> pairs = new HashSet<>();
-        for (AccessRule rule : rules) {
+        for (Rule rule : rules) {
             for (String path : rule.getPaths()) {
-                if (rule.getMethods().isEmpty()) {
+                if (rule.getMethods().length == 0) {
                     pairs.add(path + "#ALL");
                 } else {
-                    for (RequestMethod method : rule.getMethods()) {
-                        pairs.add(path + "#" + method.name());
+                    for (String method : rule.getMethods()) {
+                        pairs.add(path + "#" + method);
                     }
                 }
             }

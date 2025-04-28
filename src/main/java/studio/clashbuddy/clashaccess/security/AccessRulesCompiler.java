@@ -1,10 +1,11 @@
 package studio.clashbuddy.clashaccess.security;
 
-import org.springframework.web.bind.annotation.RequestMethod;
-import studio.clashbuddy.clashaccess.security.config.AccessRule;
 import studio.clashbuddy.clashaccess.security.config.AccessRules;
+import studio.clashbuddy.clashaccess.security.config.Rule;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 public class AccessRulesCompiler {
@@ -12,10 +13,10 @@ public class AccessRulesCompiler {
         List<CompiledAccessRule> compiled = new ArrayList<>();
 
         if (accessRules != null) {
-            for (AccessRule rule : accessRules.getRules()) {
+            for (Rule rule : accessRules.getProtectedRules()) {
                 compiled.add(new CompiledAccessRule(
                         rule.getPaths().toArray(new String[0]),
-                        rule.getMethods(),
+                        new HashSet<>(Arrays.asList(rule.getMethods())),
                         rule
                 ));
             }
@@ -24,14 +25,15 @@ public class AccessRulesCompiler {
         return compiled;
     }
 
+
     public static List<CompiledAccessRule> compilePublic(AccessRules accessRules) {
         List<CompiledAccessRule> compiled = new ArrayList<>();
 
         if (accessRules != null) {
-            for (AccessRule rule : accessRules.getPublicRules()) {
+            for (Rule rule : accessRules.getPublicRules()) {
                 compiled.add(new CompiledAccessRule(
                         rule.getPaths().toArray(new String[0]),
-                        rule.getMethods(),
+                       new HashSet<>(Arrays.asList(rule.getMethods())),
                         rule
                 ));
             }

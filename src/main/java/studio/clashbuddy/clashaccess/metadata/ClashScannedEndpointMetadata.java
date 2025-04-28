@@ -16,6 +16,7 @@ public class ClashScannedEndpointMetadata {
     private Set<String> permissions;
     private String[] publicHttpMethods;
     private String[] publicEndpoints;
+    boolean isPrivate = false;
     public void setBasePath(String basePath) {
         this.basePath = basePath;
     }
@@ -73,8 +74,8 @@ public class ClashScannedEndpointMetadata {
         this.endpoints = endpoints;
     }
 
-    void setIsPublic(boolean isPublic) {
-        if(isPublic){
+    void setIsPrivate(boolean isPrivate, boolean isAnnotated) {
+        if(isPrivate){
             publicHttpMethods = httpMethods;
             publicEndpoints = endpoints;
         }
@@ -82,6 +83,8 @@ public class ClashScannedEndpointMetadata {
             publicHttpMethods = new String[0];
             publicEndpoints = new String[0];
         }
+        if(isAnnotated)
+            this.isPrivate= isPrivate;
     }
 
     void changePublicEndpoints(String[] privateEndpoints) {
@@ -90,6 +93,11 @@ public class ClashScannedEndpointMetadata {
 
     void changePublicMethods(String[] privateMethods) {
         publicHttpMethods = removePrivates(publicHttpMethods, privateMethods);
+    }
+
+    void changePrivateEndpointsAndMethods(String[] publicEndpoints, String[] publicMethods){
+        this.publicEndpoints = publicEndpoints;
+        this.publicHttpMethods = publicMethods;
     }
 
     public String[] getPublicHttpMethods() {
@@ -116,6 +124,8 @@ public class ClashScannedEndpointMetadata {
 
         return filtered.toArray(new String[0]);
     }
+
+
 
 
     public String getController() {

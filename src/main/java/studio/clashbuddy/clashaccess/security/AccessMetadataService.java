@@ -2,14 +2,16 @@ package studio.clashbuddy.clashaccess.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.util.AntPathMatcher;
-import studio.clashbuddy.clashaccess.security.CompiledAccessRule;
-import studio.clashbuddy.clashaccess.security.config.AccessRule;
+import org.springframework.web.bind.annotation.RequestMethod;
+import studio.clashbuddy.clashaccess.properties.ClashBuddySecurityClashAccessAppProperties;
 import studio.clashbuddy.clashaccess.security.config.AccessRules;
+import studio.clashbuddy.clashaccess.security.config.PublicRule;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 
@@ -21,6 +23,10 @@ public class AccessMetadataService {
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
     @Autowired(required = false)
     private AccessRules accessRules;
+    @Autowired
+    private ClashBuddySecurityClashAccessAppProperties clashBuddySecurityClashAccessAppProperties;
+
+
 
 
     public void setCompiledRules(List<CompiledAccessRule> compiledRules) {
@@ -32,9 +38,14 @@ public class AccessMetadataService {
     }
 
     public void setCompiledPublicRules(List<CompiledAccessRule> compiledPublicRules) {
+        var end = clashBuddySecurityClashAccessAppProperties.getEndpointMetadata();
+        var metadataRule = new CompiledAccessRule(new String[]{end}, Set.of("GET"), new PublicRule(end).methods(RequestMethod.GET));
         if (compiledPublicRules != null) {
-            // Sort compiled rules by pattern specificity once at startup
+            compiledPublicRules.add(metadataRule);
             compiledPublicRules.sort(Comparator.comparingInt(this::getBestSpecificityScore).reversed());
+        } else {
+            compiledPublicRules = new ArrayList<>();
+            compiledPublicRules.add(metadataRule);
         }
         this.compiledPublicRules = compiledPublicRules;
     }
@@ -51,7 +62,7 @@ public class AccessMetadataService {
         for (CompiledAccessRule compiled : compiledPublicRules) {
             for (String pattern : compiled.getPatterns()) {
                 if (pathMatcher.match(pattern, requestPath)) {
-                    if (compiled.getMethods().contains(method)) {
+                    if (compiled.getMethods().isEmpty() || compiled.getMethods().contains(method.name())) {
                         return null;
                     }
                 }
@@ -61,7 +72,7 @@ public class AccessMetadataService {
         for (CompiledAccessRule compiled : compiledRules) {
             for (String pattern : compiled.getPatterns()) {
                 if (pathMatcher.match(pattern, requestPath)) {
-                    if (compiled.getMethods().isEmpty() || compiled.getMethods().contains(method)) {
+                    if (compiled.getMethods().isEmpty() || compiled.getMethods().contains(method.name())) {
                         return compiled;
                     }
                 }

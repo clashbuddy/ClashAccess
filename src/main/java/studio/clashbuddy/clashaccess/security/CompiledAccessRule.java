@@ -1,16 +1,19 @@
 package studio.clashbuddy.clashaccess.security;
-import studio.clashbuddy.clashaccess.security.config.AccessRule;
 import org.springframework.web.bind.annotation.RequestMethod;
+import studio.clashbuddy.clashaccess.security.config.ProtectedRule;
+import studio.clashbuddy.clashaccess.security.config.Rule;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 
 public class CompiledAccessRule {
 
     private final String[] patterns;
-    private final Set<RequestMethod> methods;
-    private final AccessRule accessRule;
+    private final Set<String> methods;
+    private final Rule accessRule;
 
-    public CompiledAccessRule(String[] patterns, Set<RequestMethod> methods, AccessRule accessRule) {
+    public CompiledAccessRule(String[] patterns, Set<String> methods, Rule accessRule) {
         this.patterns = patterns;
         this.methods = methods;
         this.accessRule = accessRule;
@@ -20,17 +23,17 @@ public class CompiledAccessRule {
         return patterns;
     }
 
-    public Set<RequestMethod> getMethods() {
+    public Set<String> getMethods() {
         return methods;
     }
 
-    public AccessRule getAccessRule() {
+    public Rule getAccessRule() {
         return accessRule;
     }
 
     public static CompiledAccessRule authorizeAnyRule() {
-        AccessRule rule = new AccessRule("/**")
+        Rule rule = new ProtectedRule("/**")
                 .methods(RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.PATCH, RequestMethod.OPTIONS, RequestMethod.HEAD, RequestMethod.OPTIONS);
-        return new CompiledAccessRule(rule.getPaths().toArray(String[]::new), rule.getMethods(), rule);
+        return new CompiledAccessRule(rule.getPaths().toArray(String[]::new), new HashSet<>(Arrays.asList(rule.getMethods())), rule);
     }
 }
