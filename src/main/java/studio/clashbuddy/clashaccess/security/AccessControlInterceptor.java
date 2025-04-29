@@ -5,25 +5,25 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
+import studio.clashbuddy.clashaccess.ratelimit.RateLimitRulesHandlerService;
 import studio.clashbuddy.clashaccess.security.config.AccessRules;
 import studio.clashbuddy.clashaccess.security.config.ProtectedRule;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 
 @Component
 class AccessControlInterceptor  implements HandlerInterceptor {
 
     @Autowired(required = false)
     private AccessRules accessRules;
+
+
     @Autowired
     private AccessMetadataService accessMetadataService;
+
+    @Autowired
+    private RateLimitRulesHandlerService rateLimitRulesHandlerService;
+
+
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
@@ -31,6 +31,7 @@ class AccessControlInterceptor  implements HandlerInterceptor {
         if (HttpStatus.valueOf(response.getStatus()).is4xxClientError()) {
             return true;
         }
+        rateLimitRulesHandlerService.handleRateLimit(request,handler);
 
         if(accessRules == null) return true;
 

@@ -28,7 +28,7 @@ public class InMemoryRateLimitStorage implements RateLimitStorage{
     private final Map<String, Counter> storage = new ConcurrentHashMap<>();
 
     @Override
-    public int incrementAndGet(String key, long windowMillis) {
+    public int increment(String key, long windowMillis) {
         long now = System.currentTimeMillis();
 
         Counter counter = storage.get(key);
@@ -42,6 +42,15 @@ public class InMemoryRateLimitStorage implements RateLimitStorage{
 
         // Increment existing counter
         counter.count++;
+        return counter.count;
+    }
+
+    @Override
+    public int currentCount(String key) {
+        long now = System.currentTimeMillis();
+        Counter counter = storage.get(key);
+        if(counter == null || counter.expireAt < now)
+            return 0;
         return counter.count;
     }
 

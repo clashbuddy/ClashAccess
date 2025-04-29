@@ -8,5 +8,6 @@ public interface RateLimitStorage {
      * @param windowMillis The time window in milliseconds
      * @return The updated request count
      */
-    int incrementAndGet(String key, long windowMillis);
+    int increment(String key, long windowMillis);
+    int currentCount(String key);
 }

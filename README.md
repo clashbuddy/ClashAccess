@@ -316,6 +316,159 @@ When hitting `/get-public-endpoints?key=...`:
 - Maintain unique base paths per service
 
 ---
+# 📈 ClashAccess Rate Limiting
+
+ClashAccess provides a built-in, flexible, and developer-friendly rate limiting system. It supports both annotation-based and Java Config–based usage, with optional Redis integration.
+
+---
+
+## ✨ 1. Annotated Usage — Quick Start
+
+Add rate limiting to any controller method:
+
+```java
+@RateLimit
+@GetMapping("/message")
+public String message() {
+    return "Hello World!";
+}
+```
+
+### Customize per method:
+```java
+@RateLimit(limit = 3, duration = 1, timeUnit = TimeUnit.MINUTES, message = "Try later", checker = MyChecker.class)
+@GetMapping("/limited")
+public String limited() {
+    return "Try again later!";
+}
+```
+
+✅ Default values:
+- `limit = 100`
+- `duration = 1`
+- `timeUnit = TimeUnit.MINUTES`
+- `message = "Too many requests"`
+- `checker = DefaultRateLimitChecker` *(uses client IP address as key)*
+
+---
+
+## ✨ 2. Custom RateLimitChecker
+
+Create your own rate-limiting strategy:
+
+```java
+@Component
+public class MyChecker extends RateLimitChecker {
+    @Override
+    public boolean check(HttpServletRequest request, RateLimitMetadata metadata) {
+        // Allow or reject request (429)
+        return true;
+    }
+}
+```
+
+Use it in a single method:
+```java
+@RateLimit(checker = MyChecker.class)
+@GetMapping("/a")
+public String a() {
+    return "Rate limited A";
+}
+```
+
+Set as global default:
+```java
+@Bean
+public GlobalRateLimitChecker globalRateLimitChecker(MyChecker myChecker) {
+    return new GlobalRateLimitChecker(myChecker);
+}
+```
+
+---
+
+## ✨ 3. Use Redis Storage
+
+By default, ClashAccess uses in-memory rate limit storage.
+To switch to Redis:
+
+```java
+@Bean
+public GlobalRateLimitStorage globalRateLimitStorage() {
+    return new GlobalRateLimitStorage(new RedisRateLimitStorage("localhost", 6379));
+}
+```
+
+With password:
+```java
+@Bean
+public GlobalRateLimitStorage globalRateLimitStorage() {
+    return new GlobalRateLimitStorage(new RedisRateLimitStorage("localhost", 6379, "password"));
+}
+```
+
+Using Spring's `StringRedisTemplate`:
+```java
+@Bean
+public GlobalRateLimitStorage globalRateLimitStorage(StringRedisTemplate redisTemplate) {
+    return new GlobalRateLimitStorage(new RedisRateLimitStorage(redisTemplate));
+}
+```
+
+---
+
+## ✨ 4. Java Config via `RateLimitRules`
+
+Target specific paths with custom rules:
+
+```java
+@Bean
+public RateLimitRules rateLimitRules() {
+    return RateLimitRules.rules(
+        Rate.paths("/api/**")
+            .methods(RequestMethod.GET)
+            .limit(100)
+            .duration(1, TimeUnit.MINUTES)
+            .message("Too much 🤪")
+            .checker(new MyChecker())
+    );
+}
+```
+
+---
+
+## ✨ 5. Global Default Limit Override
+
+Override global defaults:
+```java
+@Bean
+public RateLimitRules defaultLimits() {
+    return RateLimitRules.rules().defaultLimits(1, 1, TimeUnit.SECONDS);
+}
+```
+
+Or combine with rules:
+```java
+@Bean
+public RateLimitRules withCustomAndDefaults() {
+    return RateLimitRules.rules(
+        Rate.paths("/api/**")
+            .limit(100)
+            .duration(1, TimeUnit.MINUTES)
+            .message("Too much 🤪")
+            .checker(new MyChecker())
+    ).defaultLimits(1, 1, TimeUnit.SECONDS);
+}
+```
+
+---
+
+✅ Redis is optional. If Redis is not configured, in-memory storage is used automatically.
+
+You're ready to rate limit like a pro with ClashAccess!
+
+
+
+---
 
 ## 👨‍💼 Contributing
 

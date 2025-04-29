@@ -14,6 +14,8 @@ import studio.clashbuddy.clashaccess.exceptions.RateLimitException;
 import java.lang.reflect.Method;
 import java.util.concurrent.TimeUnit;
 
+import static studio.clashbuddy.clashaccess.ratelimit.RateLimitHelper.*;
+
 @Aspect
 @Component
 class RateLimitAnnotationHandler {
@@ -25,6 +27,9 @@ class RateLimitAnnotationHandler {
     private GlobalRateLimitChecker globalRateLimitChecker;
     @Autowired(required = false)
     private GlobalRateLimitStorage globalRateLimitStorage;
+
+    @Autowired(required = false)
+    private RateLimitRules rateLimitRules;
 
     public RateLimitAnnotationHandler(HttpServletRequest request) {
         this.request = request;
@@ -39,11 +44,11 @@ class RateLimitAnnotationHandler {
         int duration = rateLimit.duration();
         TimeUnit timeUnit =  rateLimit.timeUnit();
         String message = rateLimit.message();
-        RateLimitMetadata metadata = new RateLimitMetadata(limit, duration, timeUnit, message);
         Class<? extends RateLimitChecker> checkerClass = rateLimit.checker();
+        RateLimitMetadata metadata = buildMetadata(limit, duration, timeUnit, message, rateLimitRules);
         RateLimitChecker checkerInstance;
         if(checkerClass.equals(RateLimitChecker.class))
-            checkerInstance = getDefaultRateLimitChecker();
+            checkerInstance = getDefaultRateLimitChecker(globalRateLimitChecker);
         else {
             try {
                 checkerInstance = applicationContext.getBean(checkerClass);
@@ -54,23 +59,12 @@ class RateLimitAnnotationHandler {
                 );
             }
         }
-        checkerInstance.setRateLimitStorage(getDefaultRateLimitStorage());
+        checkerInstance.setRateLimitStorage(getDefaultRateLimitStorage(globalRateLimitStorage));
         boolean allowed  = checkerInstance.check(request,metadata);
         if(!allowed)
             throw new RateLimitException(message);
     }
 
 
-    private RateLimitStorage getDefaultRateLimitStorage() {
-        if(globalRateLimitStorage == null || globalRateLimitStorage.getRateLimitStorage() == null)
-            return  InMemoryRateLimitStorage.instance();
-        return globalRateLimitStorage.getRateLimitStorage();
-    }
-
-    private RateLimitChecker getDefaultRateLimitChecker() {
-        if(globalRateLimitChecker == null || globalRateLimitChecker.getRateLimitChecker() == null)
-           return DefaultRateLimitChecker.instance();
-        return globalRateLimitChecker.getRateLimitChecker();
-    }
 
 }

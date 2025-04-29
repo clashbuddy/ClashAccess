@@ -2,6 +2,7 @@ package studio.clashbuddy.clashaccess.ratelimit;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.servlet.HandlerMapping;
+import studio.clashbuddy.clashaccess.utils.IPAddressUtil;
 
 /**
  * Core abstract RateLimit checker class.
@@ -23,8 +24,22 @@ public abstract class RateLimitChecker {
      */
     public abstract boolean check(HttpServletRequest request, RateLimitMetadata rateLimitMetadata);
 
-    protected int updateStorageAngFetchLastCount(String key, long windowMillis){
-        return rateLimitStorage.incrementAndGet(key,windowMillis);
+    protected int updateCount(String key, long windowMillis){
+        return rateLimitStorage.increment(key,windowMillis);
+    }
+
+    protected int currentCount(String key){
+        return rateLimitStorage.currentCount(key);
+    }
+
+
+    protected String iPAddressKey(HttpServletRequest request) {
+        String clientIp = IPAddressUtil.getClientIpAddress(request);
+        String pattern = (String) request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE);
+        if (pattern == null) {
+            pattern = request.getRequestURI(); // fallback if pattern missing
+        }
+        return clientIp + ":"+request.getMethod()+":" + pattern;
     }
 
 
