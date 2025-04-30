@@ -10,7 +10,7 @@
     </parent>
     <groupId>studio.clashbuddy</groupId>
     <artifactId>spring-boot-starter-clashaccess</artifactId>
-    <version>1.1.0</version>
+    <version>2.0.0</version>
     <name>ClashAccess</name>
     <description>ClashAccess is a plug-and-play Spring Boot starter built by ClashBuddy Studio to simplify security and
         metadata exposure in microservice environments. It provides annotation-based role and permission access control
@@ -43,7 +43,7 @@
         <connection>scm:git:git://github.com/clashbuddy/ClashAccess.git</connection>
         <developerConnection>scm:git:ssh://git@github.com:clashbuddy/ClashAccess.git</developerConnection>
         <url>https://github.com/clashbuddy/ClashAccess</url>
-        <tag>v1.1.0</tag>
+        <tag>v2.0.0</tag>
     </scm>
 
     <properties>
@@ -97,6 +97,29 @@
             <version>3.2.0</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.17.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mindrot</groupId>
+            <artifactId>jbcrypt</artifactId>
+            <version>0.4</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.auth0</groupId>
+            <artifactId>java-jwt</artifactId>
+            <version>3.19.4</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-gateway-core</artifactId>
+            <version>2.2.10.RELEASE</version>
+        </dependency>
 
     </dependencies>
 

@@ -4,11 +4,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
-import studio.clashbuddy.clashaccess.metadata.ClashScannedEndpointMetadata;
+import studio.clashbuddy.clashaccess.auth.SecretStorage;
 import studio.clashbuddy.clashaccess.properties.AccessCredential;
 import studio.clashbuddy.clashaccess.properties.ClashBuddyClashAccessProperties;
 import studio.clashbuddy.clashaccess.properties.ClashBuddySecurityClashAccessGatewayProperties;
@@ -19,13 +18,15 @@ import java.util.*;
 @Component
 public class LoadedServicesEndpointsRegistry {
     private final ClashBuddyClashAccessProperties clashBuddyClashAccessProperties;
-    private final Map<String, ClashScannedEndpointMetadata> endpointMetadataHashMap = new HashMap<>();
+    private final Map<String, MetadataPayload> privateEndpoints = new HashMap<>();
+    private final Map<String, MetadataPayload> publicEndpoints = new HashMap<>();
     private final ClashBuddySecurityClashAccessGatewayProperties clashAccessGatewayProperties;
     private final Logger logger = LoggerFactory.getLogger(LoadedServicesEndpointsRegistry.class);
-
-    public LoadedServicesEndpointsRegistry(ClashBuddySecurityClashAccessGatewayProperties clashAccessGatewayProperties, ClashBuddyClashAccessProperties clashBuddyClashAccessProperties) {
-        this.clashAccessGatewayProperties = clashAccessGatewayProperties;
+    private final SecretStorage secretStorage;
+    public LoadedServicesEndpointsRegistry(ClashBuddySecurityClashAccessGatewayProperties clashBuddySecurityClashAccessGatewayProperties, ClashBuddyClashAccessProperties clashBuddyClashAccessProperties, SecretStorage secretStorage) {
+        this.clashAccessGatewayProperties = clashBuddySecurityClashAccessGatewayProperties;
         this.clashBuddyClashAccessProperties = clashBuddyClashAccessProperties;
+        this.secretStorage = secretStorage;
     }
 
     @EventListener(ApplicationReadyEvent.class)
@@ -34,22 +35,32 @@ public class LoadedServicesEndpointsRegistry {
         logger.info("✅ ClashAccess started in GATEWAY mode — loading metadata from configured services...");
 
         loadEndpointMetadata();
+        loadAuthServicesJwtSecretKey();
     }
 
-    public boolean isPublicEndpoint(String endpoint) {
-//        if (clashBuddyClashAccessProperties.getServiceType().equals(ServiceType.APPLICATION))
-//            throw new IllegalStateException(
-//                    "❌ Invalid usage: this method is only intended for API Gateway services.\n" +
-//                            "🔧 To fix this, set the correct service type in your configuration:\n\n" +
-//                            "   clashbuddy.clashaccess.application.scan=true\n\n" +
-//                            "🚫 Current context: 'application'\n" +
-//                            "✅ Allowed context: 'gateway'"
-//            );
-//        ClashScannedEndpointMetadata metadata = endpointMetadataHashMap.get(endpoint);
-//        if (metadata == null)
-//            return true;
-//        return metadata.isPublic();
-        return false;
+    public Map<String, MetadataPayload> getPrivateEndpoints() {
+        return privateEndpoints;
+    }
+
+    public Map<String, MetadataPayload> getPublicEndpoints() {
+        return publicEndpoints;
+    }
+
+    private void loadAuthServicesJwtSecretKey(){
+        var access = clashAccessGatewayProperties.getAuthServiceAccess();
+        if(access == null) return;
+        RestTemplate restTemplate = new RestTemplate();
+        String url = access.getEndpoint()+"?key="+access.getKey()+"&s=s";
+        try {
+            var responseEntity  = restTemplate.exchange(url, HttpMethod.GET, null, String.class);
+            if(responseEntity.getStatusCode().is2xxSuccessful()){
+                secretStorage.setSecret(responseEntity.getBody());
+            }else{
+                throw new Exception(responseEntity.getBody());
+            }
+        }catch (Exception e){
+            logger.error("Gateway cannot load auth service access key {}",e.getMessage());
+        }
     }
 
     private void loadEndpointMetadata() {
@@ -59,14 +70,16 @@ public class LoadedServicesEndpointsRegistry {
         for (AccessCredential access : clashAccessGatewayProperties.getAccesses()) {
             String url = access.getEndpoint() + "?key=" + access.getKey() + "&p=" + accessType;
             try {
-                List<ClashScannedEndpointMetadata> results = restTemplate.exchange(
+                var responseEntity = restTemplate.exchange(
                         url,
                         HttpMethod.GET,
                         null,
-                        new ParameterizedTypeReference<List<ClashScannedEndpointMetadata>>() {
-                        }
-                ).getBody();
-                if (results == null) {
+                        MetadataPayload.class
+                );
+                if(!responseEntity.getStatusCode().is2xxSuccessful())
+                    throw new Exception(String.valueOf(responseEntity.getBody()));
+                var metadataPayload = responseEntity.getBody();
+                if (metadataPayload == null) {
                     logger.error(
                             "❌ Failed to load metadata from service:\n" +
                                     "🔗 Endpoint: {}\n" +
@@ -78,26 +91,11 @@ public class LoadedServicesEndpointsRegistry {
 
                     continue;
                 }
-                for (ClashScannedEndpointMetadata metadata : results) {
-                    endpointMetadataHashMap.computeIfPresent(metadata.getMainEndpoint(), (k, v) -> {
-                        String message = String.format(
-                                "❌ ClashAccess Error: Duplicate endpoint detected during metadata load!\n\n" +
-                                        "🔁 Endpoint: '%s'\n" +
-                                        "🔒 Already registered by: %s (Service Key: %s)\n" +
-                                        "🚨 Conflicting with: %s (Service Key: %s)\n\n" +
-                                        "👉 Please ensure each service exposes unique main endpoints to avoid collision.",
-                                k,
-                                v.getFullControllerName(),
-                                v.getContextPath(),
-                                metadata.getFullControllerName(),
-                                access.getKey()
-                        );
-                        throw new IllegalStateException(message);
-                    });
-                    endpointMetadataHashMap.put(metadata.getMainEndpoint(), metadata);
+                if(clashAccessGatewayProperties.getAccessType().equals(ClashBuddySecurityClashAccessGatewayProperties.AccessType.PUBLIC)) {
+                    publicEndpoints.put(metadataPayload.getId(), metadataPayload);
+                } else if (clashAccessGatewayProperties.getAccessType().equals(ClashBuddySecurityClashAccessGatewayProperties.AccessType.PRIVATE)) {
+                    privateEndpoints.put(metadataPayload.getId(), metadataPayload);
                 }
-            } catch (IllegalStateException e) {
-                throw e;
             } catch (Exception e) {
                 logger.error(
                         "❌ Failed to fetch metadata from service:\n" +

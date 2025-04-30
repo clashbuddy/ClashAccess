@@ -7,7 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -43,6 +45,8 @@ class EndpointScanner implements ApplicationListener<ApplicationReadyEvent> {
     private AccessRules accessRules;
     @Autowired
     private AccessMetadataService accessMetadataService;
+    @Autowired
+    private ApplicationEventPublisher publisher;
 
     public EndpointScanner(ScannedMetadataEndpoints endPoints, ClashBuddySecurityClashAccessAppProperties clashBuddySecurityClashAccessAppProperties, ClashBuddyClashAccessProperties clashBuddyClashAccessProperties) {
         this.endPoints = endPoints;
@@ -62,7 +66,10 @@ class EndpointScanner implements ApplicationListener<ApplicationReadyEvent> {
             accessMetadataService.setCompiledPublicRules(compilePublic);
         }
 
-        if (!clashBuddyClashAccessProperties.getServiceType().equals(ServiceType.APPLICATION)) return;
+        if (!clashBuddyClashAccessProperties.getServiceType().equals(ServiceType.APPLICATION)) {
+            publisher.publishEvent(new MetadataRefreshEvent(new HashSet<>()));
+            return;
+        }
         String scanStatus = securityProperties.isScan()
                 ? "📦 Ready to process metadata endpoints."
                 : "⚠️  Endpoint scanning is disabled. No endpoints will be processed.";
@@ -172,6 +179,7 @@ class EndpointScanner implements ApplicationListener<ApplicationReadyEvent> {
         endPoints.changeEndPointsToPrivate(accessRules);
         if (accessRules != null)
             unAuthorizedEnyPublic(accessRules.getPublicRules(), securedEndpoints);
+        publisher.publishEvent(new MetadataRefreshEvent(endPoints.getMetaEndpoints()));
     }
 
     private String[] getPaths(String[] values, String[] paths){

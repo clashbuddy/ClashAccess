@@ -3,30 +3,23 @@ package studio.clashbuddy.clashaccess.metadata;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
 import studio.clashbuddy.clashaccess.properties.ClashBuddyClashAccessProperties;
 import studio.clashbuddy.clashaccess.properties.ServiceType;
 
 import java.util.Set;
 
-public abstract class ClashAccessMetadataAware implements ApplicationListener<ApplicationReadyEvent> {
+public abstract class ClashAccessMetadataAware implements ApplicationListener<MetadataRefreshEvent> {
 
-    @Autowired
-    private ScannedMetadataEndpoints metadataEndpoints;
     @Autowired
     private ClashBuddyClashAccessProperties clashBuddyClashAccessProperties;
 
-    private boolean metadataHandled = false;
-
     @Override
-    public void onApplicationEvent(ApplicationReadyEvent event) {
+    public void onApplicationEvent(MetadataRefreshEvent event) {
         if (!clashBuddyClashAccessProperties.getServiceType().equals(ServiceType.APPLICATION)) return;
-
-
-        if (!metadataHandled) {
-            metadataHandled = true;
-            onMetadataReady(metadataEndpoints.getMetaEndpoints());
-        }
+        onMetadata(event.getMetadata());
     }
 
-    protected abstract void onMetadataReady(Set<ClashScannedEndpointMetadata> metadata);
+    protected abstract void onMetadata(Set<ClashScannedEndpointMetadata> metadata);
+
 }
