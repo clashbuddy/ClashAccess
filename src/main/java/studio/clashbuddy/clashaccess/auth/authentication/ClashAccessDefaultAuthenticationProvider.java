@@ -14,12 +14,12 @@ class ClashAccessDefaultAuthenticationProvider extends ClashAccessAuthentication
     @Override
     public void authenticate(String encryptedPassword, String rawPassword) {
         if(!passwordEncoder().matches(rawPassword, encryptedPassword))
-            throw new ClashAccessDeniedException("Invalid credentials",403);
+            throw new ClashAccessDeniedException(helper().i18n("{clashaccess.error.missing.invalid-credentials}"),403);
     }
 
     @Override
     public ClashToken issueToken(ClashAuthPayload payload, double accessExpireInMinutes, double refreshExpireInMinutes) {
-            var jwtUtil = new JwtUtility(getSecret());
+            var jwtUtil = new JwtUtility(getSecret(),helper());
             var token = jwtUtil.generateJWT(payload.getUserId(),payload.getRoles(),payload.getPermissions(), accessExpireInMinutes, refreshExpireInMinutes);
             var accessToken = token.getFirst();
             var refreshToken = token.getSecond();

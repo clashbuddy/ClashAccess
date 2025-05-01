@@ -10,7 +10,7 @@
     </parent>
     <groupId>studio.clashbuddy</groupId>
     <artifactId>spring-boot-starter-clashaccess</artifactId>
-    <version>2.0.0</version>
+    <version>2.0.1</version>
     <name>ClashAccess</name>
     <description>ClashAccess is a plug-and-play Spring Boot starter built by ClashBuddy Studio to simplify security and
         metadata exposure in microservice environments. It provides annotation-based role and permission access control
@@ -115,11 +115,8 @@
             <version>3.19.4</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-gateway-core</artifactId>
-            <version>2.2.10.RELEASE</version>
-        </dependency>
+
+
 
     </dependencies>
 
@@ -132,61 +129,61 @@
                 <filtering>true</filtering> <!-- IMPORTANT -->
             </resource>
         </resources>
-        <plugins>
-            <plugin>
-                <groupId>org.sonatype.central</groupId>
-                <artifactId>central-publishing-maven-plugin</artifactId>
-                <version>0.6.0</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <publishingServerId>central</publishingServerId>
-                </configuration>
-            </plugin>
+<!--        <plugins>-->
+<!--            <plugin>-->
+<!--                <groupId>org.sonatype.central</groupId>-->
+<!--                <artifactId>central-publishing-maven-plugin</artifactId>-->
+<!--                <version>0.6.0</version>-->
+<!--                <extensions>true</extensions>-->
+<!--                <configuration>-->
+<!--                    <publishingServerId>central</publishingServerId>-->
+<!--                </configuration>-->
+<!--            </plugin>-->
 
-            <!--            javadoc-->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.3.0</version>
-                <executions>
-                    <execution>
-                        <id>attach-javadocs</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <!--            source-->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>3.2.1</version>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <goals>
-                            <goal>jar-no-fork</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <!--            pom, .asc-->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-gpg-plugin</artifactId>
-                <version>1.6</version>
-                <executions>
-                    <execution>
-                        <id>sign-artifacts</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>sign</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
+<!--            &lt;!&ndash;            javadoc&ndash;&gt;-->
+<!--            <plugin>-->
+<!--                <groupId>org.apache.maven.plugins</groupId>-->
+<!--                <artifactId>maven-javadoc-plugin</artifactId>-->
+<!--                <version>3.3.0</version>-->
+<!--                <executions>-->
+<!--                    <execution>-->
+<!--                        <id>attach-javadocs</id>-->
+<!--                        <goals>-->
+<!--                            <goal>jar</goal>-->
+<!--                        </goals>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--            </plugin>-->
+<!--            &lt;!&ndash;            source&ndash;&gt;-->
+<!--            <plugin>-->
+<!--                <groupId>org.apache.maven.plugins</groupId>-->
+<!--                <artifactId>maven-source-plugin</artifactId>-->
+<!--                <version>3.2.1</version>-->
+<!--                <executions>-->
+<!--                    <execution>-->
+<!--                        <id>attach-sources</id>-->
+<!--                        <goals>-->
+<!--                            <goal>jar-no-fork</goal>-->
+<!--                        </goals>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--            </plugin>-->
+<!--            &lt;!&ndash;            pom, .asc&ndash;&gt;-->
+<!--            <plugin>-->
+<!--                <groupId>org.apache.maven.plugins</groupId>-->
+<!--                <artifactId>maven-gpg-plugin</artifactId>-->
+<!--                <version>1.6</version>-->
+<!--                <executions>-->
+<!--                    <execution>-->
+<!--                        <id>sign-artifacts</id>-->
+<!--                        <phase>verify</phase>-->
+<!--                        <goals>-->
+<!--                            <goal>sign</goal>-->
+<!--                        </goals>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--            </plugin>-->
+<!--        </plugins>-->
     </build>
 
 </project>

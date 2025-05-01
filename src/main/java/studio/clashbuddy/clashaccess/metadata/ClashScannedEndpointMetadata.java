@@ -71,20 +71,29 @@ public class ClashScannedEndpointMetadata {
     }
 
     public void setEndpoints(String[] endpoints) {
-        this.endpoints = endpoints;
+      Set<String> items = new HashSet<>();
+        for(String endpoint: endpoints){
+            String cleanBase = basePath.replaceAll("^/+", "").replaceAll("/+$", "");
+            String cleanEndpoint = endpoint.replaceAll("^/+", "").replaceAll("/+$", "");
+            String url=contextPath+"/"+cleanBase + "/" + cleanEndpoint;
+            url = removeDuplicateSlashes(url);
+            items.add(url);
+      }
+        this.endpoints = items.toArray(new String[0]);
     }
 
-    void setIsPrivate(boolean isPrivate, boolean isAnnotated) {
-        if(isPrivate){
+    void setIsPrivate(boolean isPublic, boolean isAnnotated) {
+        if(isPublic){
             publicHttpMethods = httpMethods;
             publicEndpoints = endpoints;
+            this.isPrivate = false;
         }
         else {
             publicHttpMethods = new String[0];
             publicEndpoints = new String[0];
+            isPrivate = true;
         }
-        if(isAnnotated)
-            this.isPrivate= isPrivate;
+
     }
 
     void changePublicEndpoints(String[] privateEndpoints) {
@@ -94,6 +103,8 @@ public class ClashScannedEndpointMetadata {
     void changePublicMethods(String[] privateMethods) {
         publicHttpMethods = removePrivates(publicHttpMethods, privateMethods);
     }
+
+
 
     void changePrivateEndpointsAndMethods(String[] publicEndpoints, String[] publicMethods){
         this.publicEndpoints = publicEndpoints;
@@ -181,7 +192,6 @@ public class ClashScannedEndpointMetadata {
                 ", fullControllerName='" + fullControllerName + '\'' +
                 ", method='" + method + '\'' +
                 ", roles=" + roles +
-                ", mainEndpoint='" + getMainEndpoint() + '\'' +
                 ", permissions=" + permissions +
                 '}';
     }

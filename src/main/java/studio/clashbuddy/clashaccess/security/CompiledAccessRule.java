@@ -33,7 +33,7 @@ public class CompiledAccessRule {
 
     public static CompiledAccessRule authorizeAnyRule() {
         Rule rule = new ProtectedRule("/**")
-                .methods(RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.PATCH, RequestMethod.OPTIONS, RequestMethod.HEAD, RequestMethod.OPTIONS);
+                .methods(RequestMethod.GET);
         return new CompiledAccessRule(rule.getPaths().toArray(String[]::new), new HashSet<>(Arrays.asList(rule.getMethods())), rule);
     }
 }

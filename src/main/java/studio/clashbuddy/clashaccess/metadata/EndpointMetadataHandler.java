@@ -1,6 +1,7 @@
 package studio.clashbuddy.clashaccess.metadata;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -8,7 +9,7 @@ import studio.clashbuddy.clashaccess.exceptions.ClashAccessDeniedException;
 import studio.clashbuddy.clashaccess.properties.ClashBuddySecurityClashAccessAppProperties;
 import studio.clashbuddy.clashaccess.properties.ClashBuddySecurityClashAccessGatewayProperties;
 
-
+@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @Component
 class EndpointMetadataHandler {
     private final ScannedMetadataEndpoints scannedMetadataEndpoints;

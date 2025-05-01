@@ -26,7 +26,7 @@ public class RateLimitRules {
     }
 
     public RateLimitRules defaultLimits(int limit, int duration, TimeUnit unit){
-        return defaultLimits(limit,duration,unit,"Too many requests");
+        return defaultLimits(limit,duration,unit,"{clashaccess.rate.limit}");
     }
 
     Set<RateLimitRule> getRules() {

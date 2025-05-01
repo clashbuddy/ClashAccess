@@ -4,6 +4,7 @@ package studio.clashbuddy.clashaccess.auth;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
@@ -20,7 +21,7 @@ import studio.clashbuddy.clashaccess.properties.ServiceType;
 
 import java.lang.reflect.Method;
 
-
+@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @Component
 class AuthMetaDataAccessController implements ApplicationListener<ApplicationReadyEvent> {
 

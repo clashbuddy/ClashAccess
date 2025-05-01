@@ -43,7 +43,7 @@ class RateLimitHelper {
         if (unit.equals(TimeUnit.NANOSECONDS))
             unit = TimeUnit.MINUTES;
         if(message.isEmpty())
-            message ="Too many requests";
+            message ="{clashaccess.rate.limit}";
         return new RateLimitMetadata(limit,duration,unit,message);
     }
 

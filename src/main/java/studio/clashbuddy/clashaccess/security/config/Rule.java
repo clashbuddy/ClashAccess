@@ -17,8 +17,8 @@ public abstract class Rule {
         this.paths = new HashSet<>(Arrays.asList(paths));
     }
 
-    public Rule methods(RequestMethod... methods) {
-        this.methods.addAll(Arrays.asList(methods));
+    public Rule methods(RequestMethod methods) {
+        this.methods.add(methods);
         return this;
     }
 
@@ -30,11 +30,15 @@ public abstract class Rule {
         return methods.stream().map(RequestMethod::name).toArray(String[]::new);
     }
 
-    public static ProtectedRule protect(String ...paths) {
-        return new ProtectedRule(paths);
+    public static ProtectedRule protect(String path) {
+        if (path == null || path.isEmpty())
+            throw new IllegalStateException("Empty protected path, provide path");
+        return new ProtectedRule(path);
     }
 
-    public static PublicRule unprotect(String ... paths) {
-        return new PublicRule(paths);
+    public static PublicRule unprotect(String path) {
+        if (path == null || path.isEmpty())
+            throw new IllegalStateException("Empty unprotected path, provide path");
+        return new PublicRule(path);
     }
 }

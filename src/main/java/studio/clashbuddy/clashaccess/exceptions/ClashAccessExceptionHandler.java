@@ -1,6 +1,7 @@
 package studio.clashbuddy.clashaccess.exceptions;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -10,6 +11,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
+@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ControllerAdvice
 public class ClashAccessExceptionHandler {
 

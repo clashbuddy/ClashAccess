@@ -2,16 +2,20 @@ package studio.clashbuddy.clashaccess.ratelimit;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.stereotype.Service;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.method.HandlerMethod;
 import studio.clashbuddy.clashaccess.exceptions.RateLimitException;
+import studio.clashbuddy.clashaccess.utils.I18nHelper;
 
 import static studio.clashbuddy.clashaccess.ratelimit.RateLimitHelper.*;
+@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 
 @Service
 public class RateLimitRulesHandlerService {
-
+    @Autowired
+    private I18nHelper i18nHelper;
     @Autowired(required = false)
     private RateLimitRules rateLimitRules;
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
@@ -58,7 +62,7 @@ public class RateLimitRulesHandlerService {
         RateLimitMetadata metadata = buildMetadata(rule.getLimit(), rule.getDuration(), rule.getUnit(), rule.getMessage(), rateLimitRules);
         boolean allowed  = checkerInstance.check(request,metadata);
         if(!allowed)
-            throw new RateLimitException(metadata.getMessage());
+            throw new RateLimitException(i18nHelper.i18n(metadata.getMessage()));
     }
 
 

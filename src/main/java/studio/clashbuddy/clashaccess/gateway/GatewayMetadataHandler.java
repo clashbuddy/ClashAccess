@@ -2,6 +2,7 @@ package studio.clashbuddy.clashaccess.gateway;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -11,6 +12,7 @@ import studio.clashbuddy.clashaccess.properties.ClashBuddySecurityClashAccessGat
 import java.io.IOException;
 import java.util.stream.Collectors;
 
+@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @Component
 public class GatewayMetadataHandler {
 

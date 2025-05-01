@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +18,8 @@ import studio.clashbuddy.clashaccess.properties.ClashBuddySecurityClashAccessApp
 import java.io.IOException;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 
 @Component
 public class AuthMetadataHandler {

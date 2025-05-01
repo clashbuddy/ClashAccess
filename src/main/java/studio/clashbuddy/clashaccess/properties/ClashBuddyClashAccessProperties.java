@@ -21,7 +21,7 @@ public class ClashBuddyClashAccessProperties {
 
     public String getServiceId() {
         if(serviceId == null) {
-            return "Unknown-service-"+ UUID.randomUUID();
+            serviceId = "Unknown-service-"+ UUID.randomUUID();
         }
         return serviceId;
     }

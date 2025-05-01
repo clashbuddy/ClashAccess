@@ -2,19 +2,20 @@ package studio.clashbuddy.clashaccess.security;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-
+@ConditionalOnClass(name = "org.springframework.web.servlet.DispatcherServlet")
 @Configuration
-class AccessInterceptorConfig implements WebMvcConfigurer {
+class ClashAccessInterceptorConfig implements WebMvcConfigurer {
 
     @Autowired
-    private AccessControlInterceptor accessControlInterceptor;
+    private ClashAccessControlInterceptor clashAccessControlInterceptor;
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(accessControlInterceptor)
+        registry.addInterceptor(clashAccessControlInterceptor)
                 .addPathPatterns("/**"); // intercept ALL paths
     }
 }

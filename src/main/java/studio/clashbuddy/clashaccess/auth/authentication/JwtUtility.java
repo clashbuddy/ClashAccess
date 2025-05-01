@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.util.Pair;
 import studio.clashbuddy.clashaccess.exceptions.ClashAccessDeniedException;
+import studio.clashbuddy.clashaccess.utils.I18nHelper;
 
 
 import java.util.Arrays;
@@ -17,9 +18,10 @@ import java.util.List;
 public class JwtUtility {
     private static final Logger log = LoggerFactory.getLogger(JwtUtility.class);
     private final String secret;
-
-    public JwtUtility(String secret) {
+    private final I18nHelper helper;
+    public JwtUtility(String secret, I18nHelper helper) {
         this.secret = secret;
+        this.helper = helper;
     }
 
 
@@ -40,7 +42,7 @@ public class JwtUtility {
             return verifier.verify(token);
         } catch (RuntimeException e) {
             log.warn(e.getMessage());
-            throw new ClashAccessDeniedException("Token is not valid please login again",403);
+            throw new ClashAccessDeniedException(helper.i18n("{clashaccess.error.token-expired}"),403);
         }
     }
 

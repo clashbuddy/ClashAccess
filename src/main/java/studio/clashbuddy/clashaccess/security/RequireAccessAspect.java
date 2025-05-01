@@ -5,15 +5,20 @@ import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.stereotype.Component;
+import studio.clashbuddy.clashaccess.utils.I18nHelper;
 
 import java.lang.reflect.Method;
 
 @Aspect
 @Component
+@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 class RequireAccessAspect {
     private final HttpServletRequest request;
-
+    @Autowired
+    private I18nHelper helper;
     public RequireAccessAspect(HttpServletRequest request) {
         this.request = request;
     }
@@ -36,7 +41,7 @@ class RequireAccessAspect {
                 break;
             }
 
-        var p = AccessValidator.validateOneRoleAndPermissions(request, expectedRoles, unExpectedRoles, expectedPermission, unExpectedPermission);
+        var p = AccessValidator.validateOneRoleAndPermissions(request, expectedRoles, unExpectedRoles, expectedPermission, unExpectedPermission,helper);
         if (authorizedUser == null) return;
         authorizedUser.setUserId(p.getUserId());
         authorizedUser.setPermissions(p.getPermissions());

@@ -1,6 +1,7 @@
 package studio.clashbuddy.clashaccess.metadata;
 
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import studio.clashbuddy.clashaccess.gateway.EndpointMeta;
 import studio.clashbuddy.clashaccess.gateway.EndpointReadHelper;
 import studio.clashbuddy.clashaccess.gateway.MetadataPayload;
@@ -88,22 +89,23 @@ class ScannedMetadataEndpoints {
             return;
         }
 
+        AntPathMatcher antPathMatcher =new AntPathMatcher();
+
         // Precompute: Build a map from path -> rules fast access (optional)
         Set<ProtectedRule> accessRuleSet = accessRules.getProtectedRules();
 
         for (var endpoint : endpoints) {
-            Set<String> endpointPaths = Set.of(endpoint.getEndpoints());
+            Set<String> endpointPaths = new HashSet<>(Arrays.asList(endpoint.getEndpoints()));
+
 
             for (var rule : accessRuleSet) {
-                Set<String> rulePaths = rule.getPaths(); // You must have getPaths() return a Set<String>
-
-                boolean matches = endpointPaths.stream()
-                        .anyMatch(rulePaths::contains);
-
-                if (matches) {
-                    endpoint.changePublicEndpoints(rulePaths.toArray(new String[0]));
-                    endpoint.changePublicMethods(rule.getMethods());
+                Set<String> rulePaths = rule.getPaths();
+                if(rulePaths.stream().anyMatch(a-> endpointPaths.stream().anyMatch(b-> antPathMatcher.match(a,b)))) {
+                    var filtered = MetadataMapFilter.filterMetadata(endpointPaths, new HashSet<>(Arrays.asList(endpoint.getHttpMethods())), rulePaths, new HashSet<>(Arrays.asList(rule.getMethods())),antPathMatcher);
+                    endpoint.changePublicEndpoints(filtered.get("keepEndpoints"));
+                    endpoint.changePublicMethods(filtered.get("keepMethods"));
                 }
+
             }
         }
     }

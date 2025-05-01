@@ -150,14 +150,15 @@ class EndpointScanner implements ApplicationListener<ApplicationReadyEvent> {
                 }
 
                 ClashScannedEndpointMetadata meta = new ClashScannedEndpointMetadata();
-                meta.setEndpoints(methodPath);
                 meta.setBasePath(basePath);
+                meta.setContextPath(prefixPath);
                 meta.setHttpMethods(httpMethod);
-                meta.setIsPrivate(!isPublic, true);
+                meta.setEndpoints(methodPath);
+                meta.setIsPrivate(isPublic, true);
                 meta.setController(clazz.getSimpleName());
                 meta.setFullControllerName(clazz.getName());
                 meta.setMethod(method.getName());
-                meta.setContextPath(prefixPath);
+
 
                 if (!isPublic) {
                     meta.setRoles(Set.of(access.roles()));
@@ -194,12 +195,12 @@ class EndpointScanner implements ApplicationListener<ApplicationReadyEvent> {
     private void unAuthorizedEnyPublic(Set<PublicRule> publicRules, Set<ClashScannedEndpointMetadata> scannedMetadataEndpoints) {
         if (publicRules.isEmpty()) return;
         AntPathMatcher antPathMatcher = new AntPathMatcher();
-        for (ClashScannedEndpointMetadata metadata : scannedMetadataEndpoints) {
-            if (metadata.isPrivate) continue;
-            for (PublicRule rule : publicRules) {
-                String[] publicEndPoints = findMatchedPaths(antPathMatcher, metadata.getPublicEndpoints(), rule.getPaths().toArray(String[]::new));
-                String[] publicMethods = findMatchedMethods(metadata.getHttpMethods(), rule.getMethods());
-                metadata.changePrivateEndpointsAndMethods(publicEndPoints, publicMethods);
+        for(PublicRule rule : publicRules){
+            for(ClashScannedEndpointMetadata metadata : scannedMetadataEndpoints){
+                if(metadata.isPrivate) continue;
+                if(antPathMatcher.match(rule.getPaths().stream().findAny().get(),metadata.getEndpoints()[0])){
+                    metadata.changePrivateEndpointsAndMethods(metadata.getEndpoints(), metadata.getHttpMethods());
+                }
             }
         }
     }
@@ -216,6 +217,7 @@ class EndpointScanner implements ApplicationListener<ApplicationReadyEvent> {
         if (pathsA == null || pathsB == null) {
             return new String[0];
         }
+
 
         for (String a : pathsA) {
             for (String b : pathsB) {
