@@ -8,16 +8,7 @@ import java.util.UUID;
 @Component
 @ConfigurationProperties(prefix = "clashbuddy.clashaccess")
 public class ClashBuddyClashAccessProperties {
-    private ServiceType serviceType = ServiceType.APPLICATION;
     private String serviceId;
-
-    public ServiceType getServiceType() {
-        return serviceType;
-    }
-
-    public void setServiceType(ServiceType serviceType) {
-        this.serviceType = serviceType;
-    }
 
     public String getServiceId() {
         if(serviceId == null) {

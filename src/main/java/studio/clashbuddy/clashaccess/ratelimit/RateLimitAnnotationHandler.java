@@ -22,7 +22,6 @@ import static studio.clashbuddy.clashaccess.ratelimit.RateLimitHelper.*;
 
 @Aspect
 @Component
-@ConditionalOnWebApplication(type = Type.SERVLET)
 class RateLimitAnnotationHandler {
     private static final Logger log = LoggerFactory.getLogger(RateLimitAnnotationHandler.class);
     private final HttpServletRequest request;

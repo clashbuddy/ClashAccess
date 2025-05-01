@@ -11,7 +11,6 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
-@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ControllerAdvice
 public class ClashAccessExceptionHandler {
 

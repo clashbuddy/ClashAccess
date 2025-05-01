@@ -10,7 +10,6 @@ import studio.clashbuddy.clashaccess.exceptions.RateLimitException;
 import studio.clashbuddy.clashaccess.utils.I18nHelper;
 
 import static studio.clashbuddy.clashaccess.ratelimit.RateLimitHelper.*;
-@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 
 @Service
 public class RateLimitRulesHandlerService {

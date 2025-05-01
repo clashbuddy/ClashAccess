@@ -2,14 +2,14 @@ package studio.clashbuddy.clashaccess.metadata;
 
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
-import studio.clashbuddy.clashaccess.gateway.EndpointMeta;
-import studio.clashbuddy.clashaccess.gateway.EndpointReadHelper;
-import studio.clashbuddy.clashaccess.gateway.MetadataPayload;
+import studio.clashbuddy.clashaccess.helpers.EndpointMeta;
+import studio.clashbuddy.clashaccess.helpers.EndpointReadHelper;
+import studio.clashbuddy.clashaccess.helpers.MetadataPayload;
 import studio.clashbuddy.clashaccess.properties.ClashBuddyClashAccessProperties;
 import studio.clashbuddy.clashaccess.properties.ClashBuddySecurityClashAccessAppProperties;
-import studio.clashbuddy.clashaccess.properties.ClashBuddySecurityClashAccessGatewayProperties;
 import studio.clashbuddy.clashaccess.security.config.AccessRules;
 import studio.clashbuddy.clashaccess.security.config.ProtectedRule;
+import studio.clashbuddy.clashaccess.utils.AccessType;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -46,10 +46,10 @@ class ScannedMetadataEndpoints {
         return organizedEndpointsSet;
     }
 
-    MetadataPayload getMetadataPayload(ClashBuddySecurityClashAccessGatewayProperties.AccessType accessType) {
-        if(accessType.equals(ClashBuddySecurityClashAccessGatewayProperties.AccessType.PUBLIC))
+    MetadataPayload getMetadataPayload(AccessType accessType) {
+        if(accessType.equals(AccessType.PUBLIC))
             return loadPublicMetadataPayload();
-        if(accessType.equals(ClashBuddySecurityClashAccessGatewayProperties.AccessType.PRIVATE))
+        if(accessType.equals(AccessType.PRIVATE))
             return loadPrivateMetadataPayload();
         return loadPublicMetadataPayload();
     }

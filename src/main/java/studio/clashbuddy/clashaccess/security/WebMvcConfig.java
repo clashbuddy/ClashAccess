@@ -9,7 +9,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.List;
 
-@ConditionalOnClass(name = "org.springframework.web.servlet.DispatcherServlet")
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
 

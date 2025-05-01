@@ -5,9 +5,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplicat
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import studio.clashbuddy.clashaccess.exceptions.ClashAccessDeniedException;
 import studio.clashbuddy.clashaccess.properties.ClashBuddySecurityClashAccessAppProperties;
-import studio.clashbuddy.clashaccess.properties.ClashBuddySecurityClashAccessGatewayProperties;
+import studio.clashbuddy.clashaccess.utils.AccessType;
 
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @Component
@@ -36,7 +35,7 @@ class EndpointMetadataHandler {
         }
         if(service != null && service.equalsIgnoreCase("auth-service"))
             return ResponseEntity.ok(scannedMetadataEndpoints.getMetaEndpoints());
-        var type = ClashBuddySecurityClashAccessGatewayProperties.AccessType.fromAccessType(request.getParameter("type"));
+        var type = AccessType.fromAccessType(request.getParameter("type"));
         return ResponseEntity.ok(scannedMetadataEndpoints.getMetadataPayload(type));
     }
 }

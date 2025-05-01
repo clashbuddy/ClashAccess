@@ -16,7 +16,6 @@ public abstract class ClashAccessMetadataAware implements ApplicationListener<Me
 
     @Override
     public void onApplicationEvent(MetadataRefreshEvent event) {
-        if (!clashBuddyClashAccessProperties.getServiceType().equals(ServiceType.APPLICATION)) return;
         onMetadata(event.getMetadata());
     }
 

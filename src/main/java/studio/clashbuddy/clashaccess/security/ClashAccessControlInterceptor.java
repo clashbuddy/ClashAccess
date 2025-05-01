@@ -11,7 +11,6 @@ import studio.clashbuddy.clashaccess.ratelimit.RateLimitRulesHandlerService;
 import studio.clashbuddy.clashaccess.security.config.AccessRules;
 import studio.clashbuddy.clashaccess.security.config.ProtectedRule;
 import studio.clashbuddy.clashaccess.utils.I18nHelper;
-@ConditionalOnClass(name = "org.springframework.web.servlet.DispatcherServlet")
 @Component
 class ClashAccessControlInterceptor implements HandlerInterceptor {
 

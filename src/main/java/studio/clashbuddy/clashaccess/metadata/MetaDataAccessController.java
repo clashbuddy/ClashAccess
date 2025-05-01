@@ -41,8 +41,6 @@ class MetaDataAccessController implements ApplicationListener<ApplicationReadyEv
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        if(!clashBuddyClashAccessProperties.getServiceType().equals(ServiceType.APPLICATION)) return;
-
         String path = props.getEndpointMetadata();
         String key = props.getApiKey();
         if (!props.isEnabled()) return;

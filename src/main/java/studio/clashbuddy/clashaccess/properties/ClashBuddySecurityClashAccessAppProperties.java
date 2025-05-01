@@ -14,11 +14,8 @@ public class ClashBuddySecurityClashAccessAppProperties {
     private boolean enabled = true;
     private boolean scan = true;
     private boolean isAuthService=false;
-    private String gatewayEndpoint;
-    private String gatewayKey;
     private String authServiceEndpoint;
     private String authServiceKey;
-    private boolean authReceivePush;
     private boolean shareAuthSecretKey = false;
     private String authServiceSecret;
     private List<AccessCredential> serviceEps = new ArrayList<>();
@@ -50,13 +47,6 @@ public class ClashBuddySecurityClashAccessAppProperties {
         this.serviceEps = serviceEps;
     }
 
-    public boolean isAuthReceivePush() {
-        return authReceivePush;
-    }
-
-    public void setAuthReceivePush(boolean authReceivePush) {
-        this.authReceivePush = authReceivePush;
-    }
 
     public String getAuthServiceEndpoint() {
         return authServiceEndpoint;
@@ -78,21 +68,7 @@ public class ClashBuddySecurityClashAccessAppProperties {
         this.access = access;
     }
 
-    public String getGatewayKey() {
-        return gatewayKey;
-    }
 
-    public void setGatewayKey(String gatewayKey) {
-        this.gatewayKey = gatewayKey;
-    }
-
-    public String getGatewayEndpoint() {
-        return gatewayEndpoint;
-    }
-
-    public void setGatewayEndpoint(String gatewayEndpoint) {
-        this.gatewayEndpoint = gatewayEndpoint;
-    }
 
     public String getApiKey() {
 
@@ -147,7 +123,7 @@ public class ClashBuddySecurityClashAccessAppProperties {
         return isAuthService;
     }
 
-    public void setAuthService(boolean authService) {
+    public void setIsAuthService(boolean authService) {
         isAuthService = authService;
     }
 }

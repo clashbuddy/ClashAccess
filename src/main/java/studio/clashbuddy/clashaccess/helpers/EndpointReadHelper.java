@@ -1,4 +1,4 @@
-package studio.clashbuddy.clashaccess.gateway;
+package studio.clashbuddy.clashaccess.helpers;
 
 import studio.clashbuddy.clashaccess.metadata.ClashScannedEndpointMetadata;
 

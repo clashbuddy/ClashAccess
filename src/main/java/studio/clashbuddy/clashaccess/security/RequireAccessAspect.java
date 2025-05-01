@@ -14,7 +14,6 @@ import java.lang.reflect.Method;
 
 @Aspect
 @Component
-@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 class RequireAccessAspect {
     private final HttpServletRequest request;
     @Autowired

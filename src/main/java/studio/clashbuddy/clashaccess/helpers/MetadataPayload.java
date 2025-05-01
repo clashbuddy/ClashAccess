@@ -1,4 +1,4 @@
-package studio.clashbuddy.clashaccess.gateway;
+package studio.clashbuddy.clashaccess.helpers;
 
 import java.util.List;
 

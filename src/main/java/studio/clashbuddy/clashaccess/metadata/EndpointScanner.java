@@ -66,10 +66,6 @@ class EndpointScanner implements ApplicationListener<ApplicationReadyEvent> {
             accessMetadataService.setCompiledPublicRules(compilePublic);
         }
 
-        if (!clashBuddyClashAccessProperties.getServiceType().equals(ServiceType.APPLICATION)) {
-            publisher.publishEvent(new MetadataRefreshEvent(new HashSet<>()));
-            return;
-        }
         String scanStatus = securityProperties.isScan()
                 ? "📦 Ready to process metadata endpoints."
                 : "⚠️  Endpoint scanning is disabled. No endpoints will be processed.";

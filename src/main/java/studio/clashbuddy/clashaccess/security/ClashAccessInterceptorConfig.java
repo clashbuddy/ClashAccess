@@ -6,7 +6,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-@ConditionalOnClass(name = "org.springframework.web.servlet.DispatcherServlet")
 @Configuration
 class ClashAccessInterceptorConfig implements WebMvcConfigurer {
 
