@@ -14,7 +14,8 @@ public class RateLimitRule {
     private final TimeUnit unit;
     private final String message;
     private final RateLimitChecker checker;
-    public RateLimitRule(Set<String> paths, Set<RequestMethod> methods, int limit, int duration, TimeUnit unit, String message, RateLimitChecker checker) {
+    private final RateLimitKey rateLimitKey;
+    public RateLimitRule(Set<String> paths, Set<RequestMethod> methods, int limit, int duration, TimeUnit unit, String message, RateLimitChecker checker, RateLimitKey rateLimitKey) {
         this.paths = paths;
         this.methods = methods;
         this.limit = limit;
@@ -22,6 +23,7 @@ public class RateLimitRule {
         this.unit = unit;
         this.message = message;
         this.checker = checker;
+        this.rateLimitKey = rateLimitKey;
     }
 
     Set<String> getPaths() {
@@ -50,5 +52,9 @@ public class RateLimitRule {
 
     RateLimitChecker getChecker() {
         return checker;
+    }
+
+    RateLimitKey getRateLimitKey() {
+        return rateLimitKey;
     }
 }

@@ -10,14 +10,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Component;
 import studio.clashbuddy.clashaccess.exceptions.RateLimitException;
 import studio.clashbuddy.clashaccess.utils.I18nHelper;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
+
 import java.lang.reflect.Method;
 import java.util.concurrent.TimeUnit;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication.Type;
+
 import static studio.clashbuddy.clashaccess.ratelimit.RateLimitHelper.*;
 
 @Aspect
@@ -29,12 +28,15 @@ class RateLimitAnnotationHandler {
     @Autowired
     private ApplicationContext applicationContext;
     @Autowired(required = false)
-    private GlobalRateLimitChecker globalRateLimitChecker;
+    private RateLimitChecker rateLimitChecker;
     @Autowired(required = false)
-    private GlobalRateLimitStorage globalRateLimitStorage;
+    private RedisRateLimitStorage redisRateLimitStorage;
 
     @Autowired(required = false)
     private RateLimitRules rateLimitRules;
+
+    @Autowired(required = false)
+    private RateLimitKey rateLimitKey;
 
     @Autowired
     private I18nHelper i18nHelper;
@@ -55,21 +57,30 @@ class RateLimitAnnotationHandler {
         TimeUnit timeUnit = rateLimit.timeUnit();
         String message = rateLimit.message();
         Class<? extends RateLimitChecker> checkerClass = rateLimit.checker();
+        Class<? extends RateLimitKey> keyLimitClass = rateLimit.limitKey();
         RateLimitMetadata metadata = buildMetadata(limit, duration, timeUnit, message, rateLimitRules);
         RateLimitChecker checkerInstance;
-        if (checkerClass.equals(RateLimitChecker.class))
-            checkerInstance = getDefaultRateLimitChecker(globalRateLimitChecker);
-        else {
+        RateLimitKey resolveRateLimitKey;
+        if(keyLimitClass.equals(RateLimitKey.class))
+            resolveRateLimitKey = getDefaultRateLimitKey(rateLimitKey);
+        else{
             try {
-                checkerInstance = applicationContext.getBean(checkerClass);
-            } catch (NoSuchBeanDefinitionException ex) {
-                throw new NoSuchBeanDefinitionException(
-                        checkerClass.getName(),
-                        "❌ ClashAccess RateLimit: RateLimitChecker [" + checkerClass.getSimpleName() + "] is not available in Spring Context!"
-                );
+                resolveRateLimitKey = keyLimitClass.getDeclaredConstructor().newInstance();
+            } catch (Exception e) {
+                resolveRateLimitKey = getDefaultRateLimitKey(rateLimitKey);
             }
         }
-        checkerInstance.setRateLimitStorage(getDefaultRateLimitStorage(globalRateLimitStorage));
+
+        if (checkerClass.equals(RateLimitChecker.class))
+            checkerInstance = getDefaultRateLimitChecker(rateLimitChecker);
+        else {
+            try {
+                checkerInstance = checkerClass.getDeclaredConstructor().newInstance();
+            } catch (Exception ex) {
+                checkerInstance = getDefaultRateLimitChecker(rateLimitChecker);
+            }
+        }
+        checkerInstance.setRateLimitStorage(getDefaultRateLimitStorage(redisRateLimitStorage),resolveRateLimitKey);
         boolean allowed = checkerInstance.check(request, metadata);
         if (!allowed) {
             String resolved = i18nHelper.i18n(metadata.getMessage());

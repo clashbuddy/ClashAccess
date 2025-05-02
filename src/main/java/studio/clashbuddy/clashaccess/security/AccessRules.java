@@ -1,4 +1,4 @@
-package studio.clashbuddy.clashaccess.security.config;
+package studio.clashbuddy.clashaccess.security;
 
 import java.util.Collections;
 import java.util.HashSet;

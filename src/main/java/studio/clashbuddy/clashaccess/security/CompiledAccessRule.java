@@ -1,7 +1,5 @@
 package studio.clashbuddy.clashaccess.security;
 import org.springframework.web.bind.annotation.RequestMethod;
-import studio.clashbuddy.clashaccess.security.config.ProtectedRule;
-import studio.clashbuddy.clashaccess.security.config.Rule;
 
 import java.util.Arrays;
 import java.util.HashSet;

@@ -1,10 +1,8 @@
-package studio.clashbuddy.clashaccess.security.config;
+package studio.clashbuddy.clashaccess.security;
 
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -22,11 +20,15 @@ public abstract class Rule {
         return this;
     }
 
-    public Set<String> getPaths() {
+    void addListMethods(RequestMethod ... methods){
+        this.methods.addAll(Arrays.asList(methods));
+    }
+
+    Set<String> getPaths() {
         return paths;
     }
 
-    public String[] getMethods() {
+     String[] getMethods() {
         return methods.stream().map(RequestMethod::name).toArray(String[]::new);
     }
 

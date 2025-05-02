@@ -1,4 +1,4 @@
-package studio.clashbuddy.clashaccess.security.config;
+package studio.clashbuddy.clashaccess.security;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -17,6 +17,8 @@ public class ProtectedRule extends Rule {
     public ProtectedRule(String...paths) {
         super(paths);
     }
+
+
 
     public ProtectedRule roles(String... roles) {
         this.roles.addAll(Arrays.asList(roles));

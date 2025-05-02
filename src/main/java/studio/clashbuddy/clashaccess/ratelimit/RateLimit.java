@@ -29,6 +29,8 @@ public @interface RateLimit {
      */
     Class<? extends RateLimitChecker> checker() default RateLimitChecker.class;
 
+    Class<? extends RateLimitKey> limitKey() default RateLimitKey.class;
+
     /**
      * (Optional) Custom error message when rate limit is exceeded.
      */

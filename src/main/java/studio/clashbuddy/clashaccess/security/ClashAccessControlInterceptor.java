@@ -3,13 +3,10 @@ package studio.clashbuddy.clashaccess.security;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import studio.clashbuddy.clashaccess.ratelimit.RateLimitRulesHandlerService;
-import studio.clashbuddy.clashaccess.security.config.AccessRules;
-import studio.clashbuddy.clashaccess.security.config.ProtectedRule;
 import studio.clashbuddy.clashaccess.utils.I18nHelper;
 @Component
 class ClashAccessControlInterceptor implements HandlerInterceptor {
@@ -40,12 +37,10 @@ class ClashAccessControlInterceptor implements HandlerInterceptor {
 
         String path = request.getRequestURI();
         String method = request.getMethod();
-        CompiledAccessRule compiledRule = accessMetadataService.findMatchingRule(path, method);
-        if (compiledRule == null) {
+        ProtectedRule rule = accessMetadataService.findMatchingRule(path, method);
+        if (rule == null) {
             return true;
         }
-
-        ProtectedRule rule = (ProtectedRule) compiledRule.getAccessRule();
 
         var authorizedUser = AccessValidator.validateOneRoleAndPermissions(
                 request,

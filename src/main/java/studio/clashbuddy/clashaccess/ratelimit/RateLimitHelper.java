@@ -5,17 +5,25 @@ import java.util.concurrent.TimeUnit;
 class RateLimitHelper {
 
 
-    public static RateLimitStorage getDefaultRateLimitStorage(GlobalRateLimitStorage globalRateLimitStorage) {
-        if(globalRateLimitStorage == null || globalRateLimitStorage.getRateLimitStorage() == null)
+    public static RateLimitStorage getDefaultRateLimitStorage(RateLimitStorage rateLimitStorage) {
+        if(rateLimitStorage == null)
             return  InMemoryRateLimitStorage.instance();
-        return globalRateLimitStorage.getRateLimitStorage();
+        return rateLimitStorage;
     }
 
-    public static RateLimitChecker getDefaultRateLimitChecker(GlobalRateLimitChecker globalRateLimitChecker) {
-        if(globalRateLimitChecker == null || globalRateLimitChecker.getRateLimitChecker() == null)
+    public static RateLimitChecker getDefaultRateLimitChecker(RateLimitChecker rateLimitChecker) {
+        if(rateLimitChecker == null)
             return DefaultRateLimitChecker.instance();
-        return globalRateLimitChecker.getRateLimitChecker();
+        return rateLimitChecker;
     }
+
+    public static RateLimitKey getDefaultRateLimitKey(RateLimitKey rateLimitKey) {
+        if(rateLimitKey ==  null)
+            return IPReteLimitKey.instance();
+        return rateLimitKey;
+    }
+
+
 
 
     public static RateLimitMetadata buildMetadata(int limit, int duration, TimeUnit unit,String message,RateLimitRules rateLimitRules){

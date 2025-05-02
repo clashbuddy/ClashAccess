@@ -12,10 +12,14 @@ import studio.clashbuddy.clashaccess.utils.IPAddressUtil;
 public abstract class RateLimitChecker {
 
     private RateLimitStorage rateLimitStorage;
-
-    void setRateLimitStorage(RateLimitStorage rateLimitStorage){
+    protected RateLimitKey rateLimitKey;
+    void setRateLimitStorage(RateLimitStorage rateLimitStorage,RateLimitKey rateLimitKey){
         this.rateLimitStorage = rateLimitStorage;
+        this.rateLimitKey = rateLimitKey;
     }
+
+
+
     /**
      * Decides whether the request should be allowed based on rate limit.
      *
@@ -33,14 +37,6 @@ public abstract class RateLimitChecker {
     }
 
 
-    protected String iPAddressKey(HttpServletRequest request) {
-        String clientIp = IPAddressUtil.getClientIpAddress(request);
-        String pattern = (String) request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE);
-        if (pattern == null) {
-            pattern = request.getRequestURI(); // fallback if pattern missing
-        }
-        return clientIp + ":"+request.getMethod()+":" + pattern;
-    }
 
 
 }

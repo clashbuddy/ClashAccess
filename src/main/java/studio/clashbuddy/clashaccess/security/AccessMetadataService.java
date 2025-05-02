@@ -4,53 +4,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.bind.annotation.RequestMethod;
-import studio.clashbuddy.clashaccess.properties.ClashBuddySecurityClashAccessAppProperties;
-import studio.clashbuddy.clashaccess.security.config.AccessRules;
-import studio.clashbuddy.clashaccess.security.config.PublicRule;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Stream;
 
 
 @Service
 public class AccessMetadataService {
 
-    private List<CompiledAccessRule> compiledRules;
-    private List<CompiledAccessRule> compiledPublicRules;
+
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
     @Autowired(required = false)
     private AccessRules accessRules;
-    @Autowired
-    private ClashBuddySecurityClashAccessAppProperties clashBuddySecurityClashAccessAppProperties;
 
 
 
-
-    public void setCompiledRules(List<CompiledAccessRule> compiledRules) {
-        if (compiledRules != null) {
-            // Sort compiled rules by pattern specificity once at startup
-            compiledRules.sort(Comparator.comparingInt(this::getBestSpecificityScore).reversed());
-        }
-        this.compiledRules = compiledRules;
-    }
-
-    public void setCompiledPublicRules(List<CompiledAccessRule> compiledPublicRules) {
-        var end = clashBuddySecurityClashAccessAppProperties.getEndpointMetadata();
-        var metadataRule = new CompiledAccessRule(new String[]{end}, Set.of("GET"), new PublicRule(end).methods(RequestMethod.GET));
-        if (compiledPublicRules != null) {
-            compiledPublicRules.add(metadataRule);
-            compiledPublicRules.sort(Comparator.comparingInt(this::getBestSpecificityScore).reversed());
-        } else {
-            compiledPublicRules = new ArrayList<>();
-            compiledPublicRules.add(metadataRule);
-        }
-        this.compiledPublicRules = compiledPublicRules;
-    }
-
-    public CompiledAccessRule findMatchingRule(String requestPath, String requestMethod) {
+    public ProtectedRule findMatchingRule(String requestPath, String requestMethod) {
         RequestMethod method;
         try {
             method = RequestMethod.valueOf(requestMethod.toUpperCase());
@@ -58,29 +27,35 @@ public class AccessMetadataService {
             return null; // Unsupported HTTP method, treat as public
         }
 
+
+
         // 1. Check public rules first
-        for (CompiledAccessRule compiled : compiledPublicRules) {
-            for (String pattern : compiled.getPatterns()) {
+        for (Rule rule : accessRules.getPublicRules()) {
+            for (String pattern : rule.getPaths()) {
                 if (pathMatcher.match(pattern, requestPath)) {
-                    if (compiled.getMethods().isEmpty() || compiled.getMethods().contains(method.name())) {
+                    var methods = Arrays.asList(rule.getMethods());
+                    if (methods.isEmpty() || methods.contains(method.name())) {
                         return null;
                     }
                 }
             }
         }
 
-        for (CompiledAccessRule compiled : compiledRules) {
-            for (String pattern : compiled.getPatterns()) {
+        for (ProtectedRule rule : accessRules.getProtectedRules()) {
+            for (String pattern : rule.getPaths()) {
                 if (pathMatcher.match(pattern, requestPath)) {
-                    if (compiled.getMethods().isEmpty() || compiled.getMethods().contains(method.name())) {
-                        return compiled;
+                    var methods = Arrays.asList(rule.getMethods());
+                    if (methods.isEmpty() || methods.contains(method.name())) {
+                        return rule;
                     }
                 }
             }
         }
 
         if (accessRules.isAuthorizeAnyRequest()) {
-            return CompiledAccessRule.authorizeAnyRule();
+           var  protectRules =  new ProtectedRule("/**");
+           protectRules.addListMethods(RequestMethod.values());
+           return protectRules;
         }
 
         return null; // No matching rule, treat as public

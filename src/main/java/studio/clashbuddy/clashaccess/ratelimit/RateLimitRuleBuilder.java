@@ -16,6 +16,7 @@ public class RateLimitRuleBuilder {
     private TimeUnit unit = TimeUnit.NANOSECONDS;
     private String message = "";
     private RateLimitChecker rateLimitChecker;
+    private RateLimitKey rateLimitKey;
     public RateLimitRuleBuilder(String... paths) {
         Collections.addAll(this.paths, paths);
     }
@@ -46,7 +47,12 @@ public class RateLimitRuleBuilder {
         return this;
     }
 
+    public RateLimitRuleBuilder limitKey(RateLimitKey rateLimitKey){
+        this.rateLimitKey = rateLimitKey;
+        return this;
+    }
+
     public RateLimitRule build() {
-        return new RateLimitRule(paths, methods, limit, duration, unit, message, rateLimitChecker);
+        return new RateLimitRule(paths, methods, limit, duration, unit, message, rateLimitChecker,rateLimitKey);
     }
 }

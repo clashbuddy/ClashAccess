@@ -1,4 +1,4 @@
-package studio.clashbuddy.clashaccess.security.config;
+package studio.clashbuddy.clashaccess.security;
 
 /**
  * Represents a public (unprotected) access rule.

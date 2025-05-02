@@ -1,4 +1,4 @@
-package studio.clashbuddy.clashaccess.metadata;
+package studio.clashbuddy.clashaccess.config;
 
 import java.io.IOException;
 import java.io.InputStream;

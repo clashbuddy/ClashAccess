@@ -19,9 +19,12 @@ public class RateLimitRulesHandlerService {
     private RateLimitRules rateLimitRules;
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
     @Autowired(required = false)
-    private GlobalRateLimitChecker globalRateLimitChecker;
+    private RateLimitChecker rateLimitChecker;
     @Autowired(required = false)
-    private GlobalRateLimitStorage globalRateLimitStorage;
+    private RateLimitStorage rateLimitStorage;
+
+    @Autowired(required = false)
+    private RateLimitKey rateLimitKey;
 
 
     public void handleRateLimit(HttpServletRequest request, Object handler){
@@ -52,11 +55,18 @@ public class RateLimitRulesHandlerService {
 
     private void validateLimit(RateLimitRule rule,HttpServletRequest request){
         RateLimitChecker checkerInstance;
+        RateLimitKey key;
         if(rule.getChecker() == null)
-            checkerInstance = getDefaultRateLimitChecker(globalRateLimitChecker);
+            checkerInstance = getDefaultRateLimitChecker(rateLimitChecker);
         else
             checkerInstance = rule.getChecker();
-        checkerInstance.setRateLimitStorage(getDefaultRateLimitStorage(globalRateLimitStorage));
+
+        if(rule.getRateLimitKey() == null){
+            key = getDefaultRateLimitKey(rateLimitKey);
+        }else {
+            key = rule.getRateLimitKey();
+        }
+        checkerInstance.setRateLimitStorage(getDefaultRateLimitStorage(rateLimitStorage),key);
 
         RateLimitMetadata metadata = buildMetadata(rule.getLimit(), rule.getDuration(), rule.getUnit(), rule.getMessage(), rateLimitRules);
         boolean allowed  = checkerInstance.check(request,metadata);
