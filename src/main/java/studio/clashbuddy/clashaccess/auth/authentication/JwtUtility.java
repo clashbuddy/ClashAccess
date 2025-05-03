@@ -26,10 +26,12 @@ public class JwtUtility {
 
 
 
-    private String getToken(List<String> roles,List<String> permissions, String userId, TokenType tokenType, double duration) {
+    private String getToken(List<String> roles,List<String> permissions, String userId, TokenType tokenType, double duration, String tokenVersion) {
         return JWT.create()
                 .withSubject(userId)
                 .withExpiresAt(expireDate(duration))
+                .withIssuedAt(new Date())
+                .withClaim("tokenVersion", tokenVersion)
                 .withClaim("roles",roles)
                 .withClaim("tokenType",tokenType.name())
                 .withClaim("permissions",permissions)
@@ -66,9 +68,9 @@ public class JwtUtility {
     }
 
     public Pair<String,String> generateJWT(String userId, String[] roles,
-                                           String[] permissions, double accessMinutes, double refreshMinutes) {
-        final var ACCESS_TOKEN = getToken(Arrays.stream(roles).toList(), Arrays.stream(permissions).toList(),userId,TokenType.ACCESS,accessMinutes);
-        final var REFRESH_TOKEN = getToken(Arrays.stream(roles).toList(), Arrays.stream(permissions).toList(),userId,TokenType.REFRESH,refreshMinutes);
+                                           String[] permissions, double accessMinutes, double refreshMinutes,String tokenVersion) {
+        final var ACCESS_TOKEN = getToken(Arrays.stream(roles).toList(), Arrays.stream(permissions).toList(),userId,TokenType.ACCESS,accessMinutes,tokenVersion);
+        final var REFRESH_TOKEN = getToken(Arrays.stream(roles).toList(), Arrays.stream(permissions).toList(),userId,TokenType.REFRESH,refreshMinutes,tokenVersion);
         return Pair.of(ACCESS_TOKEN, REFRESH_TOKEN);
     }
 

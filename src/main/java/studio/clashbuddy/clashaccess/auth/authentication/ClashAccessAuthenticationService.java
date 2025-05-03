@@ -24,8 +24,8 @@ public class ClashAccessAuthenticationService {
         clashAccessAuthenticationProvider.authenticate(encodedPassword, rawPassword);
     }
 
-    public ClashToken issueToken(ClashAuthPayload payload, double accessExpireInMinutes, double refreshExpireInMinutes) {
-        return clashAccessAuthenticationProvider.issueToken(payload, accessExpireInMinutes, refreshExpireInMinutes);
+    public ClashToken issueToken(ClashAuthPayload payload, double accessExpireInMinutes, double refreshExpireInMinutes,String tokenVersion) {
+        return clashAccessAuthenticationProvider.issueToken(payload, accessExpireInMinutes, refreshExpireInMinutes,tokenVersion);
     }
 
     private void setRequiredProperties() {

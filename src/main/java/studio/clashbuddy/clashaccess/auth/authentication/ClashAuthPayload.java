@@ -1,8 +1,6 @@
 package studio.clashbuddy.clashaccess.auth.authentication;
 
 
-import java.util.List;
-
 public class ClashAuthPayload {
     private final String userId;
     private final String[] roles;
