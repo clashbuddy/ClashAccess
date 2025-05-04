@@ -1,5 +1,6 @@
 package studio.clashbuddy.clashaccess.ratelimit;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -12,11 +13,9 @@ public class RateLimitRules {
 
     private RateLimitRules() {}
 
-    public static RateLimitRules rules(RateLimitRuleBuilder... builders) {
+    public static RateLimitRules rules(RateLimitRule... builders) {
         RateLimitRules config = new RateLimitRules();
-        for (RateLimitRuleBuilder builder : builders) {
-            config.rules.add(builder.build());
-        }
+        config.rules.addAll(Arrays.asList(builders));
         return config;
     }
 
