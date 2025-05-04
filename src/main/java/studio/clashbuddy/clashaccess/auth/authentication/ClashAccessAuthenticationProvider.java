@@ -25,6 +25,6 @@ public abstract class ClashAccessAuthenticationProvider {
     }
 
     public abstract void authenticate(String encryptedPassword,String rawPassword);
-    public abstract ClashToken issueToken(ClashAuthPayload payload, double accessExpireInMinutes, double refreshExpireInMinutes,String tokenVersion);
+    public abstract ClashToken issueToken(ClashAuthPayload payload, double accessExpireInMinutes, double refreshExpireInMinutes);
 
 }

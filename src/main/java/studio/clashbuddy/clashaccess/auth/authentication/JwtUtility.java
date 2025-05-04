@@ -54,7 +54,8 @@ public class JwtUtility {
         String[] roles = decodedJWT.getClaim("roles").asArray(String.class);
         String[] permissions = decodedJWT.getClaim("permissions").asArray(String.class);
         String tokenType = decodedJWT.getClaim("tokenType").asString().toUpperCase();
-        return Pair.of(new ClashAuthPayload(userId,roles,permissions), TokenType.valueOf(tokenType));
+        String tokenVersion = decodedJWT.getClaim("tokenVersion").asString().toUpperCase();
+        return Pair.of(new ClashAuthPayload(userId,roles,permissions,tokenVersion), TokenType.valueOf(tokenType));
     }
 
     public String getUsername(DecodedJWT decodedJWT) {

@@ -8,35 +8,26 @@ import studio.clashbuddy.clashaccess.utils.I18nHelper;
 @Service
 public class ClashAccessAuthenticationService {
 
-    @Autowired(required = false)
-    private ClashAccessAuthenticationProvider clashAccessAuthenticationProvider;
-    @Autowired
-    private ClashBuddySecurityClashAccessAppProperties clashBuddySecurityClashAccessAppProperties;
 
-    @Autowired
-    private ClashAccessPasswordEncoder passwordEncoder;
+    private final ClashAccessAuthenticationProvider clashAccessAuthenticationProvider;
 
-    @Autowired
-    private I18nHelper i18nHelper;
+    public ClashAccessAuthenticationService(@Autowired(required = false) ClashAccessAuthenticationProvider clashAccessAuthenticationProvider, ClashBuddySecurityClashAccessAppProperties clashBuddySecurityClashAccessAppProperties, ClashAccessPasswordEncoder passwordEncoder, I18nHelper i18nHelper) {
+        if (clashAccessAuthenticationProvider == null)
+            clashAccessAuthenticationProvider = ClashAccessDefaultAuthenticationProvider.getInstance();
+        this.clashAccessAuthenticationProvider = clashAccessAuthenticationProvider;
+        this.clashAccessAuthenticationProvider.setPasswordEncoderAndSecret(passwordEncoder, clashBuddySecurityClashAccessAppProperties.getAuthServiceSecret(), i18nHelper);
+
+    }
+
 
     public void authenticate(String rawPassword, String encodedPassword) {
-        setRequiredProperties();
         clashAccessAuthenticationProvider.authenticate(encodedPassword, rawPassword);
     }
 
-    public ClashToken issueToken(ClashAuthPayload payload, double accessExpireInMinutes, double refreshExpireInMinutes,String tokenVersion) {
-        return clashAccessAuthenticationProvider.issueToken(payload, accessExpireInMinutes, refreshExpireInMinutes,tokenVersion);
-    }
-
-    private void setRequiredProperties() {
-        if (clashAccessAuthenticationProvider == null)
-            clashAccessAuthenticationProvider = getDefaultAuthenticationProvider();
-        clashAccessAuthenticationProvider.setPasswordEncoderAndSecret(passwordEncoder, clashBuddySecurityClashAccessAppProperties.getAuthServiceSecret(),i18nHelper);
+    public ClashToken issueToken(ClashAuthPayload payload, double accessExpireInMinutes, double refreshExpireInMinutes) {
+        return clashAccessAuthenticationProvider.issueToken(payload, accessExpireInMinutes, refreshExpireInMinutes);
     }
 
 
-    private ClashAccessAuthenticationProvider getDefaultAuthenticationProvider() {
-        return ClashAccessDefaultAuthenticationProvider.getInstance();
-    }
 
 }
