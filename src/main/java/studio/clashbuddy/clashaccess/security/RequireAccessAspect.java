@@ -2,6 +2,8 @@ package studio.clashbuddy.clashaccess.security;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.reflect.MethodSignature;
@@ -22,29 +24,34 @@ class RequireAccessAspect {
         this.request = request;
     }
 
-    @Before("@annotation(studio.clashbuddy.clashaccess.security.RequireAccess)")
-    public void before(JoinPoint joinPoint) {
+    @Around("@annotation(studio.clashbuddy.clashaccess.security.RequireAccess)")
+    public Object before(ProceedingJoinPoint joinPoint) {
         MethodSignature ms = (MethodSignature) joinPoint.getSignature();
         Method method = ms.getMethod();
         Object[] args = joinPoint.getArgs();
+        Class<?>[] parameterTypes =method.getParameterTypes();
         RequireAccess access = method.getAnnotation(RequireAccess.class);
-        if (access == null) return;
+        if (access == null) return joinPoint;
         String[] expectedRoles = access.roles();
         String[] expectedPermission = access.permissions();
         String[] unExpectedRoles = access.excludedRoles();
         String[] unExpectedPermission = access.excludedPermissions();
-        AuthorizedUser authorizedUser = null;
-        for (Object arg : args)
-            if (arg instanceof AuthorizedUser authorizedUser1) {
-                authorizedUser = authorizedUser1;
-                break;
-            }
+
 
         var p = AccessValidator.validateOneRoleAndPermissions(request, expectedRoles, unExpectedRoles, expectedPermission, unExpectedPermission,helper);
-        if (authorizedUser == null) return;
-        authorizedUser.setUserId(p.getUserId());
-        authorizedUser.setPermissions(p.getPermissions());
-        authorizedUser.setRoles(p.getRoles());
+
+        for(int i=0; i < parameterTypes.length; i++) {
+            if(parameterTypes[i] == AuthorizedUser.class) {
+                args[i] = p;
+                break;
+            }
+        }
+
+        try {
+            return joinPoint.proceed(args);
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }
