@@ -56,8 +56,7 @@ class AccessValidator {
     private static void validateHeader(HttpServletRequest request,I18nHelper helper) {
         if (!StringUtils.hasText(request.getHeader("x-ca-uid")))
             throw new ClashAccessDeniedException(helper.i18n("{clashaccess.error.missing.user-id-header}"), 403);
-        if (!StringUtils.hasText(request.getHeader("x-ca-ups")))
-            throw new ClashAccessDeniedException(helper.i18n("{clashaccess.error.missing.permissions-header}"), 403);
+
         if (!StringUtils.hasText(request.getHeader("x-ca-urs")))
             throw new ClashAccessDeniedException(helper.i18n("{clashaccess.error.missing.roles-header}"), 403);
     }
