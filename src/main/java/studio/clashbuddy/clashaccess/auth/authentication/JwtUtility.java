@@ -26,11 +26,14 @@ public class JwtUtility {
 
 
 
-    private String getToken(List<String> roles,List<String> permissions, String userId, TokenType tokenType, double duration, String tokenVersion) {
+    private String getToken(List<String> roles,List<String> permissions, String userId,String userId2, TokenType tokenType, double duration, String tokenVersion) {
+
+
         return JWT.create()
                 .withSubject(userId)
                 .withExpiresAt(expireDate(duration))
                 .withIssuedAt(new Date())
+                .withClaim("userId2",userId2)
                 .withClaim("tokenVersion", tokenVersion)
                 .withClaim("roles",roles)
                 .withClaim("tokenType",tokenType.name())
@@ -55,7 +58,8 @@ public class JwtUtility {
         String[] permissions = decodedJWT.getClaim("permissions").asArray(String.class);
         String tokenType = decodedJWT.getClaim("tokenType").asString().toUpperCase();
         String tokenVersion = decodedJWT.getClaim("tokenVersion").asString().toUpperCase();
-        return Pair.of(new ClashAuthPayload(userId,roles,permissions,tokenVersion), TokenType.valueOf(tokenType));
+        String userId2 = decodedJWT.getClaim("userId2").asString();
+        return Pair.of(new ClashAuthPayload(userId,userId2,roles,permissions,tokenVersion), TokenType.valueOf(tokenType));
     }
 
     public String getUsername(DecodedJWT decodedJWT) {
@@ -68,10 +72,10 @@ public class JwtUtility {
         return verifyToken(token);
     }
 
-    public Pair<String,String> generateJWT(String userId, String[] roles,
+    public Pair<String,String> generateJWT(String userId,String userId2, String[] roles,
                                            String[] permissions, double accessMinutes, double refreshMinutes,String tokenVersion) {
-        final var ACCESS_TOKEN = getToken(Arrays.stream(roles).toList(), Arrays.stream(permissions).toList(),userId,TokenType.ACCESS,accessMinutes,tokenVersion);
-        final var REFRESH_TOKEN = getToken(Arrays.stream(roles).toList(), Arrays.stream(permissions).toList(),userId,TokenType.REFRESH,refreshMinutes,tokenVersion);
+        final var ACCESS_TOKEN = getToken(Arrays.stream(roles).toList(), Arrays.stream(permissions).toList(),userId,userId2,TokenType.ACCESS,accessMinutes,tokenVersion);
+        final var REFRESH_TOKEN = getToken(Arrays.stream(roles).toList(), Arrays.stream(permissions).toList(),userId,userId2,TokenType.REFRESH,refreshMinutes,tokenVersion);
         return Pair.of(ACCESS_TOKEN, REFRESH_TOKEN);
     }
 

@@ -5,14 +5,16 @@ import java.util.Set;
 public class AuthorizedUser {
 
     private String userId;
+    private String userId2;
     private Set<String> roles;
     private Set<String> permissions;
 
 
-    public AuthorizedUser(String userId, Set<String> roles, Set<String> permissions) {
+    public AuthorizedUser(String userId,String userId2, Set<String> roles, Set<String> permissions) {
         this.userId = userId;
         this.roles = roles;
         this.permissions = permissions;
+        this.userId2 = userId2;
 
     }
 
@@ -40,5 +42,7 @@ public class AuthorizedUser {
         return permissions;
     }
 
-
+    public String getUserId2() {
+        return userId2;
+    }
 }

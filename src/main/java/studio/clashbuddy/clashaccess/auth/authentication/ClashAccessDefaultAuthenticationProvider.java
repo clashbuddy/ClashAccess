@@ -20,7 +20,7 @@ class ClashAccessDefaultAuthenticationProvider extends ClashAccessAuthentication
     @Override
     public ClashToken issueToken(ClashAuthPayload payload, double accessExpireInMinutes, double refreshExpireInMinutes) {
             var jwtUtil = new JwtUtility(getSecret(),helper());
-            var token = jwtUtil.generateJWT(payload.getUserId(),payload.getRoles(),payload.getPermissions(), accessExpireInMinutes, refreshExpireInMinutes, payload.getTokenVersion());
+            var token = jwtUtil.generateJWT(payload.getUserId(), payload.getUserId2(), payload.getRoles(),payload.getPermissions(), accessExpireInMinutes, refreshExpireInMinutes, payload.getTokenVersion());
             var accessToken = token.getFirst();
             var refreshToken = token.getSecond();
             return new ClashToken(accessToken,refreshToken,"Bearer");

@@ -34,12 +34,12 @@ class AccessValidator {
     private static AuthorizedUser validateAndGetAuthorizedUser(HttpServletRequest request,I18nHelper i18nHelper) {
         validateHeader(request,i18nHelper);
         var headerUserId = Objects.requireNonNull(request.getHeader("x-ca-uid"));
+        var headerUserId2 = Objects.requireNonNullElse(request.getHeader("x-ca-uid2"),"");
         Set<String> headerUserPermissions = new HashSet<>();
         Set<String> headerUserRoles = new HashSet<>();
         fillFillableList(request, headerUserPermissions, "x-ca-ups");
         fillFillableList(request, headerUserRoles, "x-ca-urs");
-
-        return new AuthorizedUser(headerUserId, headerUserRoles, headerUserPermissions);
+        return new AuthorizedUser(headerUserId,headerUserId2,headerUserRoles, headerUserPermissions);
 
     }
 
