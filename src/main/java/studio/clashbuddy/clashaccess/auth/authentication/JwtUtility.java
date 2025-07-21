@@ -47,7 +47,7 @@ public class JwtUtility {
             return verifier.verify(token);
         } catch (RuntimeException e) {
             log.warn(e.getMessage());
-            throw new ClashAccessDeniedException(helper.i18n("{clashaccess.error.token-expired}"),403);
+            throw new ClashAccessDeniedException(helper.i18n("{clashaccess.error.token-expired}"),401);
         }
     }
 

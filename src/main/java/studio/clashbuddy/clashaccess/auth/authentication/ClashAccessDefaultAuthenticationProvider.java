@@ -14,7 +14,7 @@ class ClashAccessDefaultAuthenticationProvider extends ClashAccessAuthentication
     @Override
     public void authenticate(String encryptedPassword, String rawPassword) {
         if(!passwordEncoder().matches(rawPassword, encryptedPassword))
-            throw new ClashAccessDeniedException(helper().i18n("{clashaccess.error.missing.invalid-credentials}"),403);
+            throw new ClashAccessDeniedException(helper().i18n("{clashaccess.error.missing.invalid-credentials}"),401);
     }
 
     @Override
