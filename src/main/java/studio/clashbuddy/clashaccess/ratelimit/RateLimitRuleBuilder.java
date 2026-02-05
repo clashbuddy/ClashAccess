@@ -17,6 +17,7 @@ public class RateLimitRuleBuilder {
     private String message = "";
     private RateLimitChecker rateLimitChecker;
     private RateLimitKey rateLimitKey;
+    private RateLimitWindowType rateLimitWindowType = RateLimitWindowType.TOKEN_BUCKET;
     public RateLimitRuleBuilder(String... paths) {
         Collections.addAll(this.paths, paths);
     }
@@ -51,8 +52,12 @@ public class RateLimitRuleBuilder {
         this.rateLimitKey = rateLimitKey;
         return this;
     }
+    public RateLimitRuleBuilder windowType(RateLimitWindowType windowType){
+        this.rateLimitWindowType = windowType;
+        return this;
+    }
 
     public RateLimitRule build() {
-        return new RateLimitRule(paths, methods, limit, duration, unit, message, rateLimitChecker,rateLimitKey);
+        return new RateLimitRule(paths, methods, limit, duration, unit, message, rateLimitChecker,rateLimitKey, rateLimitWindowType);
     }
 }

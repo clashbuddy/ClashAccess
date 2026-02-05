@@ -33,7 +33,6 @@ public class ClashAccessAutoConfiguration {
                 "🚀✨ ClashAccess "+VersionReader.getVersion()+" is fully initialized and ready to protect this microservices! ✨🚀\n" +
                 "🔒 Authorization: Enabled via @RequireAccess\n" +
                 "⚡ Rate Limiting: Powered by @RateLimit\n" +
-                "📦 Mode: Standalone (no metadata sharing)\n" +
                 "🛡️  Let's keep your services secure and performant.\n"
         );
     }

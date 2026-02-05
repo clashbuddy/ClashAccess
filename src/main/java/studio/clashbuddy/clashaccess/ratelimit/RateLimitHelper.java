@@ -6,53 +6,52 @@ class RateLimitHelper {
 
 
     public static RateLimitStorage getDefaultRateLimitStorage(RateLimitStorage rateLimitStorage) {
-        if(rateLimitStorage == null)
-            return  InMemoryRateLimitStorage.instance();
+        if (rateLimitStorage == null)
+            return InMemoryRateLimitStorage.instance();
         return rateLimitStorage;
     }
 
     public static RateLimitChecker getDefaultRateLimitChecker(RateLimitChecker rateLimitChecker) {
-        if(rateLimitChecker == null)
+        if (rateLimitChecker == null)
             return DefaultRateLimitChecker.instance();
         return rateLimitChecker;
     }
 
     public static RateLimitKey getDefaultRateLimitKey(RateLimitKey rateLimitKey) {
-        if(rateLimitKey ==  null)
+        if (rateLimitKey == null)
             return IPReteLimitKey.instance();
         return rateLimitKey;
     }
 
 
-
-
-    public static RateLimitMetadata buildMetadata(int limit, int duration, TimeUnit unit,String message,RateLimitRules rateLimitRules){
-        if(rateLimitRules==null)
-            return defaultMetadata(limit,duration,unit,message);
+    public static RateLimitMetadata buildMetadata(int limit, int duration, TimeUnit unit, String message, RateLimitWindowType rateLimitWindowType, RateLimitRules rateLimitRules) {
+        if (rateLimitRules == null)
+            return defaultMetadata(limit, duration, unit, message, rateLimitWindowType);
         var rate = rateLimitRules.rateLimitMetadata();
-        if(rate == null)
-            return defaultMetadata(limit,duration,unit,message);
-        if(limit <= -1)
+        if (rate == null)
+            return defaultMetadata(limit, duration, unit, message, rateLimitWindowType);
+        if (limit <= -1)
             limit = rate.getLimit();
-        if(duration <= -1)
+        if (duration <= -1)
             duration = rate.getDuration();
-        if(unit.equals(TimeUnit.NANOSECONDS))
+        if (unit.equals(TimeUnit.NANOSECONDS))
             unit = rate.getTimeUnit();
-        if(message.isEmpty())
+        if (message.isEmpty())
             message = rate.getMessage();
-        return  defaultMetadata(limit,duration,unit,message);
+        return defaultMetadata(limit, duration, unit, message, rateLimitWindowType);
     }
 
-    private static RateLimitMetadata defaultMetadata(int limit, int duration, TimeUnit unit,String message){
-        if(limit <=-1)
+    private static RateLimitMetadata defaultMetadata(int limit, int duration, TimeUnit unit, String message, RateLimitWindowType rateLimitWindowType) {
+        if (limit <= -1)
             limit = 100;
-        if(duration <=-1)
+        if (duration <= -1)
             duration = 1;
         if (unit.equals(TimeUnit.NANOSECONDS))
             unit = TimeUnit.MINUTES;
-        if(message.isEmpty())
-            message ="{clashaccess.rate.limit}";
-        return new RateLimitMetadata(limit,duration,unit,message);
+        if (message.isEmpty())
+            message = "{clashaccess.rate.limit}";
+
+        return new RateLimitMetadata(limit, duration, unit, message, rateLimitWindowType);
     }
 
 

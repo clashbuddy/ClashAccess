@@ -8,6 +8,7 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
@@ -27,22 +28,26 @@ class RateLimitAnnotationHandler {
 
     @Autowired
     private ApplicationContext applicationContext;
-    @Autowired(required = false)
-    private RateLimitChecker rateLimitChecker;
-    @Autowired(required = false)
-    private RedisRateLimitStorage redisRateLimitStorage;
+    private final ObjectProvider<RateLimitStorage> rateLimitStorageProvider;
+    private final ObjectProvider<RateLimitChecker> rateLimitCheckerProvider;
+    private final ObjectProvider<RateLimitKey> rateLimitKeyProvider;
+    private final ObjectProvider<RateLimitRules> rateLimitRulesProvider;
+    private final I18nHelper i18nHelper;
 
-    @Autowired(required = false)
-    private RateLimitRules rateLimitRules;
-
-    @Autowired(required = false)
-    private RateLimitKey rateLimitKey;
-
-    @Autowired
-    private I18nHelper i18nHelper;
-
-    public RateLimitAnnotationHandler(HttpServletRequest request) {
+    public RateLimitAnnotationHandler(
+            HttpServletRequest request,
+            ObjectProvider<RateLimitStorage> rateLimitStorageProvider,
+            ObjectProvider<RateLimitChecker> rateLimitCheckerProvider,
+            ObjectProvider<RateLimitKey> rateLimitKeyProvider,
+            ObjectProvider<RateLimitRules> rateLimitRulesProvider,
+            I18nHelper i18nHelper
+    ) {
         this.request = request;
+        this.rateLimitStorageProvider = rateLimitStorageProvider;
+        this.rateLimitCheckerProvider = rateLimitCheckerProvider;
+        this.rateLimitKeyProvider = rateLimitKeyProvider;
+        this.rateLimitRulesProvider = rateLimitRulesProvider;
+        this.i18nHelper = i18nHelper;
     }
 
 
@@ -55,32 +60,33 @@ class RateLimitAnnotationHandler {
         int limit = rateLimit.limit();
         int duration = rateLimit.duration();
         TimeUnit timeUnit = rateLimit.timeUnit();
+        RateLimitWindowType rateLimitWindowType = rateLimit.type();
         String message = rateLimit.message();
         Class<? extends RateLimitChecker> checkerClass = rateLimit.checker();
         Class<? extends RateLimitKey> keyLimitClass = rateLimit.limitKey();
-        RateLimitMetadata metadata = buildMetadata(limit, duration, timeUnit, message, rateLimitRules);
+        RateLimitMetadata metadata = buildMetadata(limit, duration, timeUnit, message, rateLimitWindowType, rateLimitRulesProvider.getIfAvailable());
         RateLimitChecker checkerInstance;
         RateLimitKey resolveRateLimitKey;
-        if(keyLimitClass.equals(RateLimitKey.class))
-            resolveRateLimitKey = getDefaultRateLimitKey(rateLimitKey);
-        else{
+        if (keyLimitClass.equals(RateLimitKey.class))
+            resolveRateLimitKey = getDefaultRateLimitKey(rateLimitKeyProvider.getIfAvailable());
+        else {
             try {
                 resolveRateLimitKey = keyLimitClass.getDeclaredConstructor().newInstance();
             } catch (Exception e) {
-                resolveRateLimitKey = getDefaultRateLimitKey(rateLimitKey);
+                resolveRateLimitKey = getDefaultRateLimitKey(rateLimitKeyProvider.getIfAvailable());
             }
         }
 
         if (checkerClass.equals(RateLimitChecker.class))
-            checkerInstance = getDefaultRateLimitChecker(rateLimitChecker);
+            checkerInstance = getDefaultRateLimitChecker(rateLimitCheckerProvider.getIfAvailable());
         else {
             try {
                 checkerInstance = checkerClass.getDeclaredConstructor().newInstance();
             } catch (Exception ex) {
-                checkerInstance = getDefaultRateLimitChecker(rateLimitChecker);
+                checkerInstance = getDefaultRateLimitChecker(rateLimitCheckerProvider.getIfAvailable());
             }
         }
-        checkerInstance.setRateLimitStorage(getDefaultRateLimitStorage(redisRateLimitStorage),resolveRateLimitKey);
+        checkerInstance.setRateLimitStorage(getDefaultRateLimitStorage(rateLimitStorageProvider.getIfAvailable()), resolveRateLimitKey);
         boolean allowed = checkerInstance.check(request, metadata);
         if (!allowed) {
             String resolved = i18nHelper.i18n(metadata.getMessage());

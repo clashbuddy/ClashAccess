@@ -68,7 +68,7 @@ public class RateLimitRulesHandlerService {
         }
         checkerInstance.setRateLimitStorage(getDefaultRateLimitStorage(rateLimitStorage),key);
 
-        RateLimitMetadata metadata = buildMetadata(rule.getLimit(), rule.getDuration(), rule.getUnit(), rule.getMessage(), rateLimitRules);
+        RateLimitMetadata metadata = buildMetadata(rule.getLimit(), rule.getDuration(), rule.getUnit(), rule.getMessage(),rule.getRateLimitWindowType(), rateLimitRules);
         boolean allowed  = checkerInstance.check(request,metadata);
         if(!allowed)
             throw new RateLimitException(i18nHelper.i18n(metadata.getMessage()));

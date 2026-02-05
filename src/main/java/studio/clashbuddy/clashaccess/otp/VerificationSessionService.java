@@ -4,6 +4,8 @@ import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -28,6 +30,7 @@ public class VerificationSessionService {
         ops.put(key, "userId", dto.getUserId());
         ops.put(key, "cbPayId", dto.getCbPayId());
         ops.put(key, "reason", dto.getReason());
+        ops.put(key, "metadata", dto.getMetadata());
 
         redisTemplate.expire(key, ttl, unit);
         return sessionId;
@@ -35,16 +38,28 @@ public class VerificationSessionService {
 
     public VerificationSessionDTO getSession(String sessionId) {
         String key = buildKey(sessionId);
-        HashOperations<String, Object, Object> ops = redisTemplate.opsForHash();
 
         if (!Boolean.TRUE.equals(redisTemplate.hasKey(key))) {
             return null;
         }
 
-        String userId =  (String) ops.get(key, "userId");
-        String  cbPayId= (String) ops.get(key, "cbPayId");
-        String reason = (String) ops.get(key, "reason");
-        return new VerificationSessionDTO(userId,cbPayId,reason);
+        HashOperations<String, String, Object> ops = redisTemplate.opsForHash();
+
+        List<Object> values = ops.multiGet(
+                key,
+                List.of("userId", "cbPayId", "reason", "metadata")
+        );
+
+        if (values == null || values.get(0) == null) {
+            return null;
+        }
+
+        return new VerificationSessionDTO(
+                (String) values.get(0),
+                (String) values.get(1),
+                (String) values.get(2),
+                values.get(3)
+        );
     }
 
     public void deleteSession(String sessionId) {

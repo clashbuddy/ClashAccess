@@ -19,13 +19,13 @@ public class RateLimitRules {
         return config;
     }
 
-    public RateLimitRules defaultLimits(int limit, int duration, TimeUnit unit,String message){
-        this.rateLimitMetadata = new RateLimitMetadata(limit,duration,unit,message);
+    public RateLimitRules defaultLimits(int limit, int duration, TimeUnit unit,String message,RateLimitWindowType windowType) {
+        this.rateLimitMetadata = new RateLimitMetadata(limit,duration,unit,message,windowType);
         return this;
     }
 
-    public RateLimitRules defaultLimits(int limit, int duration, TimeUnit unit){
-        return defaultLimits(limit,duration,unit,"{clashaccess.rate.limit}");
+    public RateLimitRules defaultLimits(int limit, int duration, TimeUnit unit,RateLimitWindowType windowType) {
+        return defaultLimits(limit,duration,unit,"{clashaccess.rate.limit}",windowType);
     }
 
     Set<RateLimitRule> getRules() {

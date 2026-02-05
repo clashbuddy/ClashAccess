@@ -6,14 +6,16 @@ public class VerificationSessionDTO {
     private String userId;
     private String cbPayId;
     private String reason;
+    private Object metadata;
 
     public VerificationSessionDTO() {
     }
 
-    public VerificationSessionDTO(String userId, String cbPayId, String reason) {
+    public VerificationSessionDTO(String userId, String cbPayId, String reason, Object metadata) {
         this.userId = userId;
         this.cbPayId = cbPayId;
         this.reason = reason;
+        this.metadata = metadata;
     }
 
     public String getUserId() {
@@ -26,6 +28,14 @@ public class VerificationSessionDTO {
 
     public String getCbPayId() {
         return cbPayId;
+    }
+
+    public Object getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(Object metadata) {
+        this.metadata = metadata;
     }
 
     public void setCbPayId(String cbPayId) {

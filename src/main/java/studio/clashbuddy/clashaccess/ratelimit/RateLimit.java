@@ -24,6 +24,11 @@ public @interface RateLimit {
     TimeUnit timeUnit() default TimeUnit.NANOSECONDS;
 
     /**
+     * (Optional) Rate Limit Window type. default is fixed
+     */
+    RateLimitWindowType type() default RateLimitWindowType.FIXED;
+
+    /**
      * (Optional) Custom key resolver class.
      * If not provided, default resolver (by IP) will be used.
      */

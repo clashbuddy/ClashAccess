@@ -6,18 +6,18 @@ import studio.clashbuddy.clashaccess.utils.IPAddressUtil;
 
 /**
  * Core abstract RateLimit checker class.
- *
+ * <p>
  * Developers can extend this class to implement their own logic for rate limiting decisions.
  */
 public abstract class RateLimitChecker {
 
     private RateLimitStorage rateLimitStorage;
     protected RateLimitKey rateLimitKey;
-    void setRateLimitStorage(RateLimitStorage rateLimitStorage,RateLimitKey rateLimitKey){
+
+    void setRateLimitStorage(RateLimitStorage rateLimitStorage, RateLimitKey rateLimitKey) {
         this.rateLimitStorage = rateLimitStorage;
         this.rateLimitKey = rateLimitKey;
     }
-
 
 
     /**
@@ -28,15 +28,13 @@ public abstract class RateLimitChecker {
      */
     public abstract boolean check(HttpServletRequest request, RateLimitMetadata rateLimitMetadata);
 
-    protected int updateCount(String key, long windowMillis){
-        return rateLimitStorage.increment(key,windowMillis);
+    protected int updateCount(String key, long windowMillis, RateLimitWindowType rateLimitWindowType) {
+        return updateCount(key, windowMillis, 0, 0, rateLimitWindowType);
     }
 
-    protected int currentCount(String key){
-        return rateLimitStorage.currentCount(key);
+    protected int updateCount(String key, long windowMillis, double refillTokensPerMillis, int cost, RateLimitWindowType rateLimitWindowType) {
+        return rateLimitStorage.increment(key, windowMillis, refillTokensPerMillis, cost, rateLimitWindowType);
     }
-
-
 
 
 }
